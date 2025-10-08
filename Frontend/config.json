@@ -2,8 +2,13 @@
   "api_auth": "/api/auth",
   "api_users": "/api/users",
   "api_units": "/api/units",
-  "api_reservations": "/api/reservations"
+  "api_reservations": "/api/reservations",
+  "api_visitors": "/api/visitors",
+  "api_maintenance": "/api/maintenance",
+  "api_reports": "/api/reports"
 }
+
+
 
 
 

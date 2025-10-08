@@ -20,10 +20,17 @@ CREATE TABLE IF NOT EXISTS units (
 
 CREATE TABLE IF NOT EXISTS visitors (
   id SERIAL PRIMARY KEY,
-  name TEXT,
-  document TEXT,
-  authorized BOOLEAN DEFAULT FALSE,
-  visit_time TIMESTAMP DEFAULT now()
+  name TEXT NOT NULL,
+  document TEXT NOT NULL,
+  unit_id INTEGER REFERENCES units(id),
+  visit_date TIMESTAMP NOT NULL,
+  expected_duration INTEGER DEFAULT 120,
+  purpose TEXT NOT NULL,
+  contact_phone TEXT,
+  status TEXT DEFAULT 'scheduled',
+  check_in TIMESTAMP,
+  check_out TIMESTAMP,
+  created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS reservations (
@@ -36,11 +43,18 @@ CREATE TABLE IF NOT EXISTS reservations (
   created_at TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS maintenance (
+CREATE TABLE IF NOT EXISTS maintenance_orders (
   id SERIAL PRIMARY KEY,
   unit_id INTEGER REFERENCES units(id),
-  description TEXT,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  priority TEXT DEFAULT 'medium',
+  category TEXT NOT NULL,
+  requested_by INTEGER REFERENCES users(id),
   status TEXT DEFAULT 'open',
+  expected_date TIMESTAMP,
+  assigned_to TEXT,
+  completed_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT now()
 );
 

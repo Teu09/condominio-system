@@ -25,3 +25,6 @@ def authenticate(email: str, password: str, company: str | None) -> dict:
 
 
 
+
+
+
