@@ -1,0 +1,99 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Painel Administrativo - Condomínio</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body{font-family:Arial, sans-serif;background:#f5f7fb;margin:0}
+      header{background:#0b62a4;color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+      .container{padding:20px}
+      nav a{color:white;margin-right:12px;text-decoration:none}
+      .card{background:white;padding:20px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08);max-width:1000px;margin:20px auto}
+      .hidden{display:none}
+      input,select,button,textarea{padding:8px;margin:6px 0;display:block;width:100%;box-sizing:border-box}
+      .row{display:flex;gap:12px}
+      .col{flex:1}
+      table{width:100%;border-collapse:collapse;margin-top:10px}
+      th,td{border:1px solid #eee;padding:8px;text-align:left}
+    </style>
+  </head>
+  <body>
+    <header>
+      <div><strong>Painel - Condomínio</strong></div>
+      <nav id="main-nav" style="display:none">
+        <a href="#" data-view="users">Usuários</a>
+        <a href="#" data-view="units">Unidades</a>
+        <a href="#" data-view="reservations">Reservas</a>
+        <a href="#" data-view="visitors">Visitantes</a>
+        <a href="#" data-view="maintenance">Manutenção</a>
+        <a href="#" data-view="reports">Relatórios</a>
+        <a href="#" id="logout">Sair</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      <div id="login" class="card">
+        <h3>Login</h3>
+        <input id="company" placeholder="Empresa (opcional)" />
+        <input id="email" placeholder="email" value="admin@condo.local" />
+        <input id="password" placeholder="senha" value="admin" type="password" />
+        <button id="btn-login">Entrar</button>
+        <div id="login-msg"></div>
+      </div>
+
+      <div id="view-users" class="card hidden">
+        <h3>Usuários</h3>
+        <button id="refresh-users">Atualizar</button>
+        <table id="tbl-users"><thead><tr><th>ID</th><th>Email</th><th>Nome</th><th>Função</th></tr></thead><tbody></tbody></table>
+        <h4>Criar Usuário</h4>
+        <input id="u-email" placeholder="email" />
+        <input id="u-pass" placeholder="senha" />
+        <input id="u-name" placeholder="nome" />
+        <select id="u-role"><option value="morador">morador</option><option value="sindico">sindico</option><option value="admin">admin</option></select>
+        <button id="btn-create-user">Criar</button>
+      </div>
+
+      <div id="view-units" class="card hidden">
+        <h3>Unidades</h3>
+        <button id="refresh-units">Atualizar</button>
+        <table id="tbl-units"><thead><tr><th>ID</th><th>Bloco</th><th>Número</th><th>Owner</th></tr></thead><tbody></tbody></table>
+        <h4>Criar Unidade</h4>
+        <input id="unit-block" placeholder="Bloco" />
+        <input id="unit-number" placeholder="Número" />
+        <input id="unit-owner" placeholder="Owner ID (opcional)" />
+        <button id="btn-create-unit">Criar Unidade</button>
+      </div>
+
+      <div id="view-reservations" class="card hidden">
+        <h3>Reservas</h3>
+        <button id="refresh-res">Atualizar</button>
+        <table id="tbl-res"><thead><tr><th>ID</th><th>Unit</th><th>Área</th><th>Início</th><th>Fim</th><th>Status</th><th>Ações</th></tr></thead><tbody></tbody></table>
+        <h4>Criar Reserva</h4>
+        <input id="res-unit" placeholder="Unit ID" />
+        <input id="res-area" placeholder="Área (ex: Salão de festas)" />
+        <input id="res-start" placeholder="Início (YYYY-MM-DD HH:MM)" />
+        <input id="res-end" placeholder="Fim (YYYY-MM-DD HH:MM)" />
+        <button id="btn-create-res">Criar Reserva</button>
+      </div>
+
+      <div id="view-visitors" class="card hidden">
+        <h3>Visitantes</h3>
+        <p>Funcionalidade a implementar — endpoints prontos no visitor_service (health/info) para expandir.</p>
+      </div>
+
+      <div id="view-maintenance" class="card hidden">
+        <h3>Manutenção</h3>
+        <p>Funcionalidade a implementar — endpoints prontos no maintenance_service (health/info) para expandir.</p>
+      </div>
+
+      <div id="view-reports" class="card hidden">
+        <h3>Relatórios</h3>
+        <p>Use o Reporting Service (porta 8007) para gerar relatórios. Esta tela exibirá relatórios em próximas versões.</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

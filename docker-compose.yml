@@ -1,0 +1,139 @@
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: condo
+      POSTGRES_PASSWORD: condopass
+      POSTGRES_DB: condominio
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./Scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condo -d condominio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth_service:
+    build: ./Backend/auth_service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  user_service:
+    build: ./Backend/user_service
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  unit_service:
+    build: ./Backend/unit_service
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  reservation_service:
+    build: ./Backend/reservation_service
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  visitor_service:
+    build: ./Backend/visitor_service
+    ports:
+      - "8005:8005"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  maintenance_service:
+    build: ./Backend/maintenance_service
+    ports:
+      - "8006:8006"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  reporting_service:
+    build: ./Backend/reporting_service
+    ports:
+      - "8007:8007"
+    environment:
+      DATABASE_URL: postgresql://condo:condopass@db:5432/condominio
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    image: nginx:alpine
+    volumes:
+      - ./Frontend:/usr/share/nginx/html:ro
+      - ./Frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      auth_service:
+        condition: service_healthy
+      user_service:
+        condition: service_healthy
+
+volumes:
+  db_data:
