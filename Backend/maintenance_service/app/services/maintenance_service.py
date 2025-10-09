@@ -60,3 +60,6 @@ def delete_maintenance_order(order_id: int):
     repo.delete_maintenance_order(order_id)
     return {'message': 'Maintenance order deleted successfully'}
 
+
+
+

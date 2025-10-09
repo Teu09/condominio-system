@@ -32,3 +32,6 @@ class VisitorUpdate(BaseModel):
     check_in: Optional[datetime] = None
     check_out: Optional[datetime] = None
 
+
+
+

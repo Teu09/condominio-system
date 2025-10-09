@@ -18,3 +18,6 @@ class ReportOut(BaseModel):
     data: Dict[str, Any]
     summary: Dict[str, Any]
 
+
+
+

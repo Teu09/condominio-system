@@ -59,3 +59,6 @@ def delete_visitor(visitor_id: int):
     repo.delete_visitor(visitor_id)
     return {'message': 'Visitor deleted successfully'}
 
+
+
+

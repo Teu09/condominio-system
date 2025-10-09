@@ -27,3 +27,6 @@ def get_user_ep(user_id: int, auth=Depends(auth_client.get_current_user)):
 
 
 
+
+
+

@@ -36,6 +36,13 @@ def cancel_reservation(res_id: int, caller: dict):
     return {'status':'cancelled'}
 
 
+def is_time_range_available(area: str, start_time, end_time) -> bool:
+    return not repo.has_conflict(area, start_time, end_time)
+
+
+
+
+
 
 
 

@@ -519,9 +519,35 @@
 
       <div id="view-reservations" class="card hidden fade-in">
         <h3><i class="fas fa-calendar-check"></i> Reservas</h3>
-        <button id="refresh-res" class="btn-secondary">
-          <i class="fas fa-sync-alt"></i> Atualizar
-        </button>
+        <div id="calendar" class="card" style="margin-bottom:20px">
+          <div class="row">
+            <div class="form-group">
+              <label for="cal-month">Mês</label>
+              <input id="cal-month" type="month" />
+            </div>
+            <div class="form-group">
+              <label for="cal-area">Área</label>
+              <input id="cal-area" placeholder="Filtrar por área (opcional)" />
+            </div>
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button id="btn-load-calendar" class="btn-secondary"><i class="fas fa-calendar"></i> Carregar Calendário</button>
+            </div>
+          </div>
+          <div id="calendar-grid"></div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label for="list-area">Área (lista)</label>
+            <input id="list-area" placeholder="Filtrar por área (opcional)" />
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button id="refresh-res" class="btn-secondary">
+              <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+          </div>
+        </div>
         <table id="tbl-res">
           <thead>
             <tr>
@@ -550,11 +576,11 @@
         <div class="row">
           <div class="form-group">
             <label for="res-start">Data e Hora de Início</label>
-            <input id="res-start" placeholder="YYYY-MM-DD HH:MM" />
+            <input id="res-start" type="datetime-local" />
           </div>
           <div class="form-group">
             <label for="res-end">Data e Hora de Fim</label>
-            <input id="res-end" placeholder="YYYY-MM-DD HH:MM" />
+            <input id="res-end" type="datetime-local" />
           </div>
         </div>
         <button id="btn-create-res" class="btn-success">
@@ -703,6 +729,9 @@
             <label>&nbsp;</label>
             <button id="btn-generate-report" class="btn-success">
               <i class="fas fa-chart-bar"></i> Gerar Relatório
+            </button>
+            <button id="btn-export-reservations" class="btn-secondary" style="margin-top:10px">
+              <i class="fas fa-file-csv"></i> Exportar Reservas (CSV)
             </button>
           </div>
         </div>

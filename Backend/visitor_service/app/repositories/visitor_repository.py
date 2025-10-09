@@ -82,3 +82,6 @@ def delete_visitor(visitor_id: int) -> None:
         cur.close()
         conn.close()
 
+
+
+

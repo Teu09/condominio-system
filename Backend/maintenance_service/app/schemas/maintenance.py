@@ -33,3 +33,6 @@ class MaintenanceUpdate(BaseModel):
     assigned_to: Optional[str] = None
     completed_date: Optional[datetime] = None
 
+
+
+

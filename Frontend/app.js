@@ -27,6 +27,22 @@
 
   function showNav(show){ document.getElementById('main-nav').style.display = show? 'block':'none' }
 
+  function adjustNavByRole(){
+    const role = localStorage.getItem('role');
+    const nav = document.getElementById('main-nav');
+    if (!nav) return;
+    // Show all by default
+    nav.querySelectorAll('[data-view], #logout').forEach(a=> a.style.display = '');
+    // Hide admin-only items for moradores
+    if (role === 'morador'){
+      const hideViews = ['users','reports','units','visitors','maintenance'];
+      hideViews.forEach(v => {
+        const el = nav.querySelector(`[data-view="${v}"]`);
+        if (el) el.style.display = 'none';
+      });
+    }
+  }
+
   function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
@@ -82,6 +98,7 @@
       
       document.getElementById('login').classList.add('hidden');
       showNav(true);
+      adjustNavByRole();
       navigateTo('dashboard');
       showAlert('Login realizado com sucesso!', 'success');
     } catch (error) {
@@ -115,7 +132,7 @@
     if(view==='dashboard') loadDashboard();
     if(view==='users') loadUsers();
     if(view==='units') loadUnits();
-    if(view==='reservations') loadReservations();
+    if(view==='reservations'){ loadReservations(); initCalendar(); }
     if(view==='visitors') loadVisitors();
     if(view==='maintenance') loadMaintenance();
     if(view==='reports') loadReports();
@@ -267,9 +284,11 @@
 
   // Reservations
   async function loadReservations(){
+    const areaFilter = (document.getElementById('list-area')||{}).value || '';
     const res = await authFetch(API_RES + '/reservations');
     if (!res.ok){ showAlert('Erro ao listar reservas', 'error'); return; }
-    const rows = await res.json();
+    let rows = await res.json();
+    if (areaFilter) rows = rows.filter(r=> (r.area||'').toLowerCase().includes(areaFilter.toLowerCase()));
     const tbody = document.querySelector('#tbl-res tbody'); 
     tbody.innerHTML='';
     rows.forEach(r => {
@@ -306,8 +325,8 @@
   document.getElementById('btn-create-res').onclick = async ()=>{
     const unit_id = parseInt(document.getElementById('res-unit').value);
     const area = document.getElementById('res-area').value;
-    const start = document.getElementById('res-start').value.replace(' ','T') + ':00';
-    const end = document.getElementById('res-end').value.replace(' ','T') + ':00';
+    const start = document.getElementById('res-start').value ? document.getElementById('res-start').value + ':00' : '';
+    const end = document.getElementById('res-end').value ? document.getElementById('res-end').value + ':00' : '';
     
     if (!unit_id || !area || !start || !end) {
       showAlert('Por favor, preencha todos os campos', 'error');
@@ -318,6 +337,17 @@
     setLoading(btn, true);
     
     try {
+      // availability check
+      const qs = new URLSearchParams({ area, start_time: start, end_time: end }).toString();
+      const availabilityRes = await authFetch(API_RES + `/reservations/availability?${qs}`);
+      if (availabilityRes.ok){
+        const avail = await availabilityRes.json();
+        if (!avail.available){
+          showAlert(avail.detail || 'Horário indisponível para esta área', 'error');
+          setLoading(btn, false);
+          return;
+        }
+      }
       const body = {unit_id, area, start_time: start, end_time: end};
       const res = await authFetch(API_RES + '/reservations', {
         method:'POST', 
@@ -345,6 +375,93 @@
       setLoading(btn, false);
     }
   };
+
+  function initCalendar(){
+    const monthInput = document.getElementById('cal-month');
+    const btn = document.getElementById('btn-load-calendar');
+    const grid = document.getElementById('calendar-grid');
+    const areaInput = document.getElementById('cal-area');
+    if (!monthInput || !btn || !grid) return;
+
+    if (!monthInput.value){
+      const today = new Date();
+      monthInput.value = today.toISOString().slice(0,7);
+    }
+
+    btn.onclick = async ()=>{
+      const [year, month] = monthInput.value.split('-').map(x=>parseInt(x,10));
+      if (!year || !month) return;
+      await renderCalendar(year, month, areaInput.value||'');
+    };
+
+    // Auto render on open
+    const [y, m] = monthInput.value.split('-').map(x=>parseInt(x,10));
+    renderCalendar(y, m, areaInput ? (areaInput.value||'') : '');
+  }
+
+  async function renderCalendar(year, month, areaFilter){
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+    grid.style.gap = '8px';
+
+    const start = new Date(year, month-1, 1);
+    const end = new Date(year, month, 0);
+    const firstWeekday = (start.getDay()+6)%7; // make Monday=0
+    const daysInMonth = end.getDate();
+
+    // fetch reservations once
+    const res = await authFetch(API_RES + '/reservations');
+    let rows = res.ok ? await res.json() : [];
+    if (areaFilter) rows = rows.filter(r=> (r.area||'').toLowerCase().includes(areaFilter.toLowerCase()));
+
+    const user = JSON.parse(localStorage.getItem('user')||'{}');
+
+    // Build a map date -> reservations
+    const dateKey = (d)=> d.toISOString().slice(0,10);
+    const map = {};
+    for (const r of rows){
+      const s = new Date(r.start_time);
+      if (s.getFullYear()===year && (s.getMonth()+1)===month){
+        const k = dateKey(s);
+        (map[k] = map[k] || []).push(r);
+      }
+    }
+
+    // Headers
+    const weekdays = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    weekdays.forEach(w=>{
+      const h = document.createElement('div');
+      h.style.fontWeight = '700';
+      h.style.textAlign = 'center';
+      h.textContent = w;
+      grid.appendChild(h);
+    });
+
+    // Leading blanks
+    for (let i=0;i<firstWeekday;i++){
+      const b = document.createElement('div');
+      grid.appendChild(b);
+    }
+
+    for (let d=1; d<=daysInMonth; d++){
+      const cell = document.createElement('div');
+      cell.className = 'card';
+      cell.style.padding = '10px';
+      const dayDate = new Date(year, month-1, d);
+      const k = dateKey(dayDate);
+      const list = map[k] || [];
+      const items = list.slice(0,3).map(r=>{
+        const isMine = user && typeof user.id !== 'undefined' && (r.owner_id === user.id || r.user_id === user.id);
+        const bulletColor = isMine ? '#20c997' : '#667eea';
+        return `<div style=\"font-size:0.85rem\"><i class='fas fa-circle' style='font-size:6px;color:${bulletColor}'></i> ${r.area} ${new Date(r.start_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>`
+      }).join('');
+      const more = list.length>3 ? `<div style='font-size:0.8rem;color:#666'>+${list.length-3} mais</div>`:'';
+      cell.innerHTML = `<div style='font-weight:700;margin-bottom:6px'>${d}</div>${items}${more}`;
+      grid.appendChild(cell);
+    }
+  }
 
   // Visitors
   async function loadVisitors(){
@@ -627,6 +744,33 @@
     }
   };
 
+  // Export reservations CSV
+  document.getElementById('btn-export-reservations').onclick = async ()=>{
+    const startDate = document.getElementById('report-start').value;
+    const endDate = document.getElementById('report-end').value;
+    if (!startDate || !endDate) { showAlert('Selecione as datas para exportar', 'error'); return; }
+    const qs = new URLSearchParams({ start_date: startDate + 'T00:00:00', end_date: endDate + 'T23:59:59' }).toString();
+    const token = localStorage.getItem('token');
+    try{
+      const res = await fetch(API_REPORTS + `/reports/reservations/export?${qs}`, {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      });
+      if (!res.ok){ showAlert('Erro ao exportar CSV', 'error'); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reservas_${startDate}_${endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showAlert('CSV gerado com sucesso!', 'success');
+    }catch(e){
+      showAlert('Erro de conexão ao exportar', 'error');
+    }
+  };
+
   function displayReport(report) {
     const resultsDiv = document.getElementById('report-results');
     const contentDiv = document.getElementById('report-content');
@@ -679,6 +823,7 @@
   if(localStorage.getItem('token')){ 
     document.getElementById('login').classList.add('hidden'); 
     showNav(true); 
+    adjustNavByRole();
     navigateTo('dashboard'); 
   }
 })();
