@@ -86,6 +86,11 @@ INSERT INTO tenants (name, cnpj, address, phone, email, theme_config) VALUES
 ('Condomínio das Araras', '98.765.432/0001-10', 'Av. dos Pássaros, 456', '(11) 88888-8888', 'contato@araras.com', '{"primary_color": "#2e7d32", "secondary_color": "#ff6f00", "background_color": "#f1f8e9", "text_color": "#1b5e20"}')
 ON CONFLICT (cnpj) DO NOTHING;
 
+-- seed super admin (sem tenant_id = NULL para acesso global)
+INSERT INTO users (tenant_id, email, password, full_name, role, permissions) VALUES
+(NULL, 'superadmin@condosys.com', 'superadmin123', 'Super Administrador CondoSys', 'super_admin', '["all", "manage_tenants", "global_access"]')
+ON CONFLICT (email) DO NOTHING;
+
 -- seed admin users for each tenant
 INSERT INTO users (tenant_id, email, password, full_name, role, permissions) VALUES
 (1, 'admin@alphaline.com', 'admin', 'Administrador Alphaline', 'admin', '["all"]'),
