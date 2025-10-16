@@ -544,6 +544,81 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
+      /* Controle de Telas */
+      .screen-permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 25px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--border-radius-soft);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .screen-category {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: var(--border-radius-soft);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .screen-category h5 {
+        color: var(--text-color);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 8px;
+      }
+
+      .screen-category h5 i {
+        color: var(--primary-color);
+      }
+
+      /* Templates de Função */
+      .role-templates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 25px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--border-radius-soft);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn-template {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius-soft);
+        padding: 15px 20px;
+        color: var(--text-color);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+        justify-content: center;
+      }
+
+      .btn-template:hover {
+        background: var(--primary-gradient);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .btn-template i {
+        font-size: 1.1rem;
+      }
+
       .permission-category {
         background: rgba(255, 255, 255, 0.1);
         padding: 20px;
@@ -634,6 +709,19 @@
 
         .permissions-grid {
           grid-template-columns: 1fr;
+        }
+
+        .screen-permissions-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .role-templates {
+          flex-direction: column;
+        }
+
+        .btn-template {
+          min-width: auto;
+          width: 100%;
         }
 
         table {
@@ -904,7 +992,83 @@
                 </div>
               </div>
               
-              <!-- Permissões Avançadas -->
+              <!-- Controle de Acesso por Telas -->
+              <h4><i class="fas fa-desktop"></i> Controle de Acesso por Telas</h4>
+              <div class="screen-permissions-grid">
+                <div class="screen-category">
+                  <h5><i class="fas fa-tachometer-alt"></i> Dashboard</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="dashboard" checked>
+                    <span>Dashboard Principal</span>
+                  </label>
+                </div>
+                
+                <div class="screen-category">
+                  <h5><i class="fas fa-users"></i> Gestão de Pessoas</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="users">
+                    <span>Gerenciar Usuários</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="family">
+                    <span>Membros da Família</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="visitors">
+                    <span>Visitantes</span>
+                  </label>
+                </div>
+                
+                <div class="screen-category">
+                  <h5><i class="fas fa-building"></i> Gestão de Propriedades</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="units">
+                    <span>Unidades</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="maintenance">
+                    <span>Manutenção</span>
+                  </label>
+                </div>
+                
+                <div class="screen-category">
+                  <h5><i class="fas fa-calendar-check"></i> Reservas e Eventos</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="reservations">
+                    <span>Reservas de Áreas</span>
+                  </label>
+                </div>
+                
+                <div class="screen-category">
+                  <h5><i class="fas fa-chart-bar"></i> Relatórios e Análises</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="screen_permissions" value="reports">
+                    <span>Relatórios</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Templates de Função -->
+              <h4><i class="fas fa-magic"></i> Templates de Função</h4>
+              <div class="role-templates">
+                <button type="button" class="btn-template" onclick="applyRoleTemplate('admin')">
+                  <i class="fas fa-crown"></i> Administrador Completo
+                </button>
+                <button type="button" class="btn-template" onclick="applyRoleTemplate('sindico')">
+                  <i class="fas fa-user-tie"></i> Síndico
+                </button>
+                <button type="button" class="btn-template" onclick="applyRoleTemplate('morador')">
+                  <i class="fas fa-home"></i> Morador
+                </button>
+                <button type="button" class="btn-template" onclick="applyRoleTemplate('porteiro')">
+                  <i class="fas fa-shield-alt"></i> Porteiro
+                </button>
+                <button type="button" class="btn-template" onclick="applyRoleTemplate('custom')">
+                  <i class="fas fa-cog"></i> Personalizado
+                </button>
+              </div>
+
+              <!-- Permissões Específicas -->
               <h4><i class="fas fa-key"></i> Permissões Específicas</h4>
               <div class="permissions-grid">
                 <div class="permission-category">
@@ -1468,6 +1632,10 @@
         const selectedPermissions = Array.from(document.querySelectorAll('input[name="permissions"]:checked'))
           .map(checkbox => checkbox.value);
         
+        // Coletar telas selecionadas
+        const selectedScreens = Array.from(document.querySelectorAll('input[name="screen_permissions"]:checked'))
+          .map(checkbox => checkbox.value);
+        
         const formData = {
           full_name: document.getElementById('new-user-name').value,
           email: document.getElementById('new-user-email').value,
@@ -1476,6 +1644,7 @@
           role: document.getElementById('new-user-role').value,
           is_active: document.getElementById('new-user-status').value === 'true',
           permissions: selectedPermissions,
+          screen_permissions: selectedScreens,
           phone: document.getElementById('new-user-phone').value || null,
           document: document.getElementById('new-user-document').value || null
         };
@@ -1503,6 +1672,74 @@
         } finally {
           setLoading(btn, false);
         }
+      };
+
+      // Templates de função
+      window.applyRoleTemplate = function(role) {
+        // Limpar todas as seleções
+        document.querySelectorAll('input[name="permissions"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[name="screen_permissions"]').forEach(cb => cb.checked = false);
+        
+        // Atualizar função
+        document.getElementById('new-user-role').value = role;
+        
+        // Aplicar templates baseados na função
+        switch(role) {
+          case 'admin':
+            // Administrador completo - todas as permissões
+            document.querySelectorAll('input[name="permissions"]').forEach(cb => cb.checked = true);
+            document.querySelectorAll('input[name="screen_permissions"]').forEach(cb => cb.checked = true);
+            break;
+            
+          case 'sindico':
+            // Síndico - gestão completa exceto usuários
+            document.querySelectorAll('input[name="screen_permissions"]').forEach(cb => {
+              if (['dashboard', 'family', 'visitors', 'units', 'maintenance', 'reservations', 'reports'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            document.querySelectorAll('input[name="permissions"]').forEach(cb => {
+              if (['manage_units', 'create_units', 'manage_reservations', 'create_reservations', 'manage_visitors', 'register_visitors', 'manage_maintenance', 'create_maintenance', 'view_reports', 'export_reports'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            break;
+            
+          case 'morador':
+            // Morador - apenas visualização e ações básicas
+            document.querySelectorAll('input[name="screen_permissions"]').forEach(cb => {
+              if (['dashboard', 'family', 'visitors', 'reservations'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            document.querySelectorAll('input[name="permissions"]').forEach(cb => {
+              if (['create_reservations', 'register_visitors', 'create_maintenance'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            break;
+            
+          case 'porteiro':
+            // Porteiro - foco em visitantes e entrada
+            document.querySelectorAll('input[name="screen_permissions"]').forEach(cb => {
+              if (['dashboard', 'visitors'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            document.querySelectorAll('input[name="permissions"]').forEach(cb => {
+              if (['manage_visitors', 'register_visitors'].includes(cb.value)) {
+                cb.checked = true;
+              }
+            });
+            break;
+            
+          case 'custom':
+            // Personalizado - apenas dashboard
+            document.querySelector('input[name="screen_permissions"][value="dashboard"]').checked = true;
+            break;
+        }
+        
+        showAlert(`Template "${role}" aplicado com sucesso!`, 'success');
       };
 
       // Relatórios
