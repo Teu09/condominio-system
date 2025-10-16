@@ -83,10 +83,13 @@ def authenticate_super_admin(email: str, password: str) -> dict:
     # Parse permissions
     permissions = []
     if permissions_json:
-        try:
-            permissions = json.loads(permissions_json)
-        except json.JSONDecodeError:
-            permissions = []
+        if isinstance(permissions_json, str):
+            try:
+                permissions = json.loads(permissions_json)
+            except json.JSONDecodeError:
+                permissions = []
+        else:
+            permissions = permissions_json
     
     payload = {
         'sub': str(user_id),
