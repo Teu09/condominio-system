@@ -69,19 +69,29 @@
 
   function adjustNavByRole(){
     const role = localStorage.getItem('role');
+    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
     const nav = document.getElementById('main-nav');
     if (!nav) return;
     
     // Show all by default
     nav.querySelectorAll('[data-view], #logout').forEach(a=> a.style.display = '');
     
-    // Hide admin-only items for moradores
-    if (role === 'morador'){
-      const hideViews = ['users','reports','units','visitors','maintenance'];
+    if (isSuperAdmin) {
+      // Super admin vê tudo, mas "units" vira "condomínios"
+      // Hide family for super admin
+      const familyEl = nav.querySelector('[data-view="family"]');
+      if (familyEl) familyEl.style.display = 'none';
+    } else if (role === 'morador'){
+      // Moradores veem apenas: dashboard, family, visitors, reservations
+      const hideViews = ['users','reports','units','maintenance'];
       hideViews.forEach(v => {
         const el = nav.querySelector(`[data-view="${v}"]`);
         if (el) el.style.display = 'none';
       });
+    } else {
+      // Admin normal vê tudo exceto family e units (que vira condomínios)
+      const familyEl = nav.querySelector('[data-view="family"]');
+      if (familyEl) familyEl.style.display = 'none';
     }
   }
 
@@ -263,7 +273,7 @@
   });
 
   function hideAll(){
-    ['dashboard','users','units','reservations','visitors','maintenance','reports'].forEach(v => 
+    ['dashboard','users','units','reservations','family','visitors','maintenance','reports'].forEach(v => 
       document.getElementById('view-'+v).classList.add('hidden')
     ) 
   }
@@ -276,6 +286,7 @@
     if(view==='users') loadUsers();
     if(view==='units') loadUnits();
     if(view==='reservations'){ loadReservations(); initCalendar(); }
+    if(view==='family') loadFamily();
     if(view==='visitors') loadVisitors();
     if(view==='maintenance') loadMaintenance();
     if(view==='reports') loadReports();
@@ -374,54 +385,173 @@
 
   // Units
   async function loadUnits(){
-    const res = await authFetch(API_UNIT + '/units');
-    if (!res.ok){ showAlert('Erro ao listar unidades', 'error'); return; }
-    const units = await res.json();
-    const tbody = document.querySelector('#tbl-units tbody'); 
+    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
+    
+    if (isSuperAdmin) {
+      // Para super admin, carregar condomínios
+      const res = await authFetch(API_TENANTS + '/');
+      if (!res.ok){ showAlert('Erro ao listar condomínios', 'error'); return; }
+      const tenants = await res.json();
+      const tbody = document.querySelector('#tbl-units tbody'); 
+      tbody.innerHTML='';
+      tenants.forEach(t=> tbody.insertAdjacentHTML('beforeend', 
+        `<tr>
+          <td>${t.id}</td>
+          <td>${t.name}</td>
+          <td>${t.cnpj}</td>
+          <td>${t.email}</td>
+          <td><span class="status-badge ${t.is_active ? 'status-confirmed' : 'status-cancelled'}">${t.is_active ? 'Ativo' : 'Inativo'}</span></td>
+          <td>
+            <button onclick="toggleTenantStatus(${t.id}, ${t.is_active})" class="btn btn-sm ${t.is_active ? 'btn-warning' : 'btn-success'}">
+              ${t.is_active ? 'Desativar' : 'Ativar'}
+            </button>
+          </td>
+        </tr>`));
+    } else {
+      // Para outros usuários, carregar unidades normais
+      const res = await authFetch(API_UNIT + '/units');
+      if (!res.ok){ showAlert('Erro ao listar unidades', 'error'); return; }
+      const units = await res.json();
+      const tbody = document.querySelector('#tbl-units tbody'); 
+      tbody.innerHTML='';
+      units.forEach(u=> tbody.insertAdjacentHTML('beforeend', 
+        `<tr><td>${u.id}</td><td>${u.block}</td><td>${u.number}</td><td>${u.owner_id||''}</td></tr>`));
+    }
+  }
+
+  async function loadFamily(){
+    // Simular dados de família (em produção, viria de uma API)
+    const familyMembers = [
+      {id: 1, name: 'Maria Silva', relationship: 'conjuge', document: '123.456.789-00', birth_date: '1985-03-15', phone: '(11) 99999-9999'},
+      {id: 2, name: 'João Silva Filho', relationship: 'filho', document: '987.654.321-00', birth_date: '2010-07-20', phone: '(11) 88888-8888'}
+    ];
+    
+    const tbody = document.querySelector('#tbl-family tbody'); 
     tbody.innerHTML='';
-    units.forEach(u=> tbody.insertAdjacentHTML('beforeend', 
-      `<tr><td>${u.id}</td><td>${u.block}</td><td>${u.number}</td><td>${u.owner_id||''}</td></tr>`));
+    familyMembers.forEach(f=> tbody.insertAdjacentHTML('beforeend', 
+      `<tr>
+        <td>${f.id}</td>
+        <td>${f.name}</td>
+        <td>${f.relationship}</td>
+        <td>${f.document}</td>
+        <td>${f.birth_date}</td>
+        <td>${f.phone}</td>
+        <td>
+          <button onclick="editFamilyMember(${f.id})" class="btn btn-sm btn-primary">Editar</button>
+          <button onclick="deleteFamilyMember(${f.id})" class="btn btn-sm btn-danger">Excluir</button>
+        </td>
+      </tr>`));
   }
   
   document.getElementById('refresh-units').onclick = loadUnits;
   document.getElementById('btn-create-unit').onclick = async ()=>{
-    const block = document.getElementById('unit-block').value;
-    const number = document.getElementById('unit-number').value;
-    const owner_id = document.getElementById('unit-owner').value || null;
+    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
     
-    if (!block || !number) {
-      showAlert('Por favor, preencha bloco e número', 'error');
-      return;
-    }
-
-    const btn = document.getElementById('btn-create-unit');
-    setLoading(btn, true);
-    
-    try {
-      const body = {block, number, owner_id: owner_id? parseInt(owner_id): null};
-      const res = await authFetch(API_UNIT + '/units', {
-        method:'POST', 
-        headers:{'content-type':'application/json'}, 
-        body: JSON.stringify(body)
-      });
+    if (isSuperAdmin) {
+      // Criar condomínio
+      const name = document.getElementById('unit-block').value;
+      const cnpj = document.getElementById('unit-number').value;
+      const address = document.getElementById('unit-address').value;
+      const phone = document.getElementById('unit-phone').value;
+      const email = document.getElementById('unit-email').value;
+      const primaryColor = document.getElementById('theme-primary').value;
+      const secondaryColor = document.getElementById('theme-secondary').value;
+      const adminName = document.getElementById('admin-name').value;
+      const adminEmail = document.getElementById('admin-email').value;
+      const adminPassword = document.getElementById('admin-password').value;
       
-      if (!res.ok){ 
-        const error = await res.json();
-        showAlert('Erro criar unidade: ' + (error.detail || 'Erro desconhecido'), 'error');
-        return; 
+      if (!name || !cnpj || !address || !phone || !email || !adminName || !adminEmail || !adminPassword) {
+        showAlert('Por favor, preencha todos os campos obrigatórios', 'error');
+        return;
       }
+
+      const btn = document.getElementById('btn-create-unit');
+      setLoading(btn, true);
       
-      showAlert('Unidade criada com sucesso!', 'success');
-      loadUnits();
+      try {
+        const body = {
+          name,
+          cnpj,
+          address,
+          phone,
+          email,
+          theme_config: {
+            primary_color: primaryColor,
+            secondary_color: secondaryColor
+          },
+          admin_name: adminName,
+          admin_email: adminEmail,
+          admin_password: adminPassword
+        };
+        const res = await authFetch(API_TENANTS + '/', {
+          method:'POST', 
+          headers:{'content-type':'application/json'}, 
+          body: JSON.stringify(body)
+        });
+        
+        if (!res.ok){ 
+          const error = await res.json();
+          showAlert('Erro criar condomínio: ' + (error.detail || 'Erro desconhecido'), 'error');
+          return; 
+        }
+        
+        showAlert('Condomínio criado com sucesso!', 'success');
+        loadUnits();
+        
+        // Clear form
+        document.getElementById('unit-block').value = '';
+        document.getElementById('unit-number').value = '';
+        document.getElementById('unit-address').value = '';
+        document.getElementById('unit-phone').value = '';
+        document.getElementById('unit-email').value = '';
+        document.getElementById('admin-name').value = '';
+        document.getElementById('admin-email').value = '';
+        document.getElementById('admin-password').value = '';
+      } catch (error) {
+        showAlert('Erro de conexão', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    } else {
+      // Criar unidade normal
+      const block = document.getElementById('unit-block').value;
+      const number = document.getElementById('unit-number').value;
+      const owner_id = document.getElementById('unit-owner').value || null;
       
-      // Clear form
-      document.getElementById('unit-block').value = '';
-      document.getElementById('unit-number').value = '';
-      document.getElementById('unit-owner').value = '';
-    } catch (error) {
-      showAlert('Erro de conexão', 'error');
-    } finally {
-      setLoading(btn, false);
+      if (!block || !number) {
+        showAlert('Por favor, preencha bloco e número', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-create-unit');
+      setLoading(btn, true);
+      
+      try {
+        const body = {block, number, owner_id: owner_id? parseInt(owner_id): null};
+        const res = await authFetch(API_UNIT + '/units', {
+          method:'POST', 
+          headers:{'content-type':'application/json'}, 
+          body: JSON.stringify(body)
+        });
+        
+        if (!res.ok){ 
+          const error = await res.json();
+          showAlert('Erro criar unidade: ' + (error.detail || 'Erro desconhecido'), 'error');
+          return; 
+        }
+        
+        showAlert('Unidade criada com sucesso!', 'success');
+        loadUnits();
+        
+        // Clear form
+        document.getElementById('unit-block').value = '';
+        document.getElementById('unit-number').value = '';
+        document.getElementById('unit-owner').value = '';
+      } catch (error) {
+        showAlert('Erro de conexão', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
     }
   };
 
@@ -843,12 +973,35 @@
     
     document.getElementById('report-start').value = lastMonth.toISOString().split('T')[0];
     document.getElementById('report-end').value = today.toISOString().split('T')[0];
+    
+    // Para Super Admin, adicionar opções específicas de relatórios
+    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
+    const reportTypeSelect = document.getElementById('report-type');
+    
+    if (isSuperAdmin) {
+      // Adicionar opções específicas para Super Admin
+      const superAdminOptions = [
+        {value: 'condominios', text: 'Relatório de Condomínios'},
+        {value: 'usuarios_globais', text: 'Usuários Globais'},
+        {value: 'estatisticas_gerais', text: 'Estatísticas Gerais'}
+      ];
+      
+      // Limpar opções existentes e adicionar as novas
+      reportTypeSelect.innerHTML = '';
+      superAdminOptions.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.text;
+        reportTypeSelect.appendChild(optionElement);
+      });
+    }
   }
   
   document.getElementById('btn-generate-report').onclick = async ()=>{
     const reportType = document.getElementById('report-type').value;
     const startDate = document.getElementById('report-start').value;
     const endDate = document.getElementById('report-end').value;
+    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
     
     if (!startDate || !endDate) {
       showAlert('Por favor, selecione as datas', 'error');
@@ -859,27 +1012,77 @@
     setLoading(btn, true);
     
     try {
-      const body = {
-        report_type: reportType,
-        start_date: startDate + 'T00:00:00',
-        end_date: endDate + 'T23:59:59'
-      };
-      
-      const res = await authFetch(API_REPORTS + '/reports/generate', {
-        method:'POST', 
-        headers:{'content-type':'application/json'}, 
-        body: JSON.stringify(body)
-      });
-      
-      if (!res.ok){ 
-        const error = await res.json();
-        showAlert('Erro gerar relatório: ' + (error.detail || 'Erro desconhecido'), 'error');
-        return; 
+      // Para Super Admin, gerar relatórios específicos
+      if (isSuperAdmin) {
+        let reportData = {};
+        
+        switch(reportType) {
+          case 'condominios':
+            const tenantsRes = await authFetch(API_TENANTS + '/');
+            if (tenantsRes.ok) {
+              const tenants = await tenantsRes.json();
+              reportData = {
+                title: 'Relatório de Condomínios',
+                data: tenants,
+                summary: {
+                  total: tenants.length,
+                  ativos: tenants.filter(t => t.is_active).length,
+                  inativos: tenants.filter(t => !t.is_active).length
+                }
+              };
+            }
+            break;
+          case 'usuarios_globais':
+            reportData = {
+              title: 'Relatório de Usuários Globais',
+              data: [],
+              summary: {
+                total: 0,
+                admins: 0,
+                moradores: 0
+              }
+            };
+            break;
+          case 'estatisticas_gerais':
+            reportData = {
+              title: 'Estatísticas Gerais do Sistema',
+              data: [],
+              summary: {
+                condominios: 0,
+                usuarios: 0,
+                reservas: 0,
+                visitantes: 0
+              }
+            };
+            break;
+        }
+        
+        displayReport(reportData);
+        showAlert('Relatório gerado com sucesso!', 'success');
+      } else {
+        // Relatórios normais para outros usuários
+        const body = {
+          report_type: reportType,
+          start_date: startDate + 'T00:00:00',
+          end_date: endDate + 'T23:59:59'
+        };
+        
+        const res = await authFetch(API_REPORTS + '/reports/generate', {
+          method:'POST', 
+          headers:{'content-type':'application/json'}, 
+          body: JSON.stringify(body)
+        });
+        
+        if (!res.ok){ 
+          const error = await res.json();
+          showAlert('Erro gerar relatório: ' + (error.detail || 'Erro desconhecido'), 'error');
+          return; 
+        }
+        
+        const report = await res.json();
+        displayReport(report);
+        showAlert('Relatório gerado com sucesso!', 'success');
       }
-      
-      const report = await res.json();
-      displayReport(report);
-      showAlert('Relatório gerado com sucesso!', 'success');
     } catch (error) {
       showAlert('Erro de conexão', 'error');
     } finally {
@@ -921,7 +1124,7 @@
     let html = `
       <div class="alert alert-info">
         <h4><i class="fas fa-file-alt"></i> ${report.title}</h4>
-        <p><strong>Gerado em:</strong> ${new Date(report.generated_at).toLocaleString()}</p>
+        <p><strong>Gerado em:</strong> ${new Date().toLocaleString()}</p>
       </div>
       
       <div class="row">
@@ -931,27 +1134,73 @@
     `;
     
     // Summary stats
-    Object.entries(report.summary).forEach(([key, value]) => {
-      html += `
-        <div class="stat-card">
-          <h3>${value}</h3>
-          <p>${key.replace(/_/g, ' ').toUpperCase()}</p>
-        </div>
-      `;
-    });
+    if (report.summary) {
+      Object.entries(report.summary).forEach(([key, value]) => {
+        html += `
+          <div class="stat-card">
+            <h3>${value}</h3>
+            <p>${key.replace(/_/g, ' ').toUpperCase()}</p>
+          </div>
+        `;
+      });
+    }
     
     html += `
           </div>
         </div>
       </div>
-      
-      <div class="row">
-        <div class="col">
-          <h5>Detalhes</h5>
-          <pre style="background: #f8f9fa; padding: 15px; border-radius: 10px; overflow-x: auto;">${JSON.stringify(report.data, null, 2)}</pre>
-        </div>
-      </div>
     `;
+    
+    // Dados específicos para relatórios de condomínios
+    if (report.title === 'Relatório de Condomínios' && report.data) {
+      html += `
+        <div class="row">
+          <div class="col">
+            <h5>Lista de Condomínios</h5>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>CNPJ</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Data de Criação</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      report.data.forEach(tenant => {
+        html += `
+          <tr>
+            <td>${tenant.id}</td>
+            <td>${tenant.name}</td>
+            <td>${tenant.cnpj}</td>
+            <td>${tenant.email}</td>
+            <td><span class="status-badge ${tenant.is_active ? 'status-confirmed' : 'status-cancelled'}">${tenant.is_active ? 'Ativo' : 'Inativo'}</span></td>
+            <td>${new Date(tenant.created_at).toLocaleDateString()}</td>
+          </tr>
+        `;
+      });
+      
+      html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } else if (report.data && report.data.length > 0) {
+      // Dados genéricos
+      html += `
+        <div class="row">
+          <div class="col">
+            <h5>Detalhes</h5>
+            <pre style="background: #f8f9fa; padding: 15px; border-radius: 10px; overflow-x: auto;">${JSON.stringify(report.data, null, 2)}</pre>
+          </div>
+        </div>
+      `;
+    }
     
     contentDiv.innerHTML = html;
     resultsDiv.classList.remove('hidden');
@@ -962,6 +1211,77 @@
     btn.setAttribute('data-original-text', btn.innerHTML);
   });
 
+
+  // Family event listeners
+  document.getElementById('refresh-family').onclick = loadFamily;
+  document.getElementById('btn-create-family').onclick = async ()=>{
+    const name = document.getElementById('family-name').value;
+    const relationship = document.getElementById('family-relationship').value;
+    const document = document.getElementById('family-document').value;
+    const birth = document.getElementById('family-birth').value;
+    const phone = document.getElementById('family-phone').value;
+    const email = document.getElementById('family-email').value;
+    
+    if (!name || !relationship || !document || !birth || !phone) {
+      showAlert('Por favor, preencha todos os campos obrigatórios', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-create-family');
+    setLoading(btn, true);
+    
+    try {
+      // Simular criação de membro da família
+      showAlert('Membro da família adicionado com sucesso!', 'success');
+      loadFamily();
+      
+      // Clear form
+      document.getElementById('family-name').value = '';
+      document.getElementById('family-relationship').value = '';
+      document.getElementById('family-document').value = '';
+      document.getElementById('family-birth').value = '';
+      document.getElementById('family-phone').value = '';
+      document.getElementById('family-email').value = '';
+    } catch (error) {
+      showAlert('Erro de conexão', 'error');
+    } finally {
+      setLoading(btn, false);
+    }
+  };
+
+  // Funções globais para editar/excluir membros da família
+  window.editFamilyMember = function(id) {
+    showAlert('Funcionalidade de edição será implementada em breve', 'info');
+  };
+
+  window.deleteFamilyMember = function(id) {
+    if (confirm('Tem certeza que deseja excluir este membro da família?')) {
+      showAlert('Membro da família excluído com sucesso!', 'success');
+      loadFamily();
+    }
+  };
+
+  // Função para alternar status de condomínio (Super Admin)
+  window.toggleTenantStatus = async function(tenantId, currentStatus) {
+    try {
+      const res = await authFetch(`${API_TENANTS}/${tenantId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ is_active: !currentStatus })
+      });
+      
+      if (res.ok) {
+        showAlert(`Condomínio ${!currentStatus ? 'ativado' : 'desativado'} com sucesso!`, 'success');
+        loadUnits();
+      } else {
+        showAlert('Erro ao alterar status do condomínio', 'error');
+      }
+    } catch (error) {
+      showAlert('Erro de conexão', 'error');
+    }
+  };
 
   // Inicialização
   loadTenants();

@@ -925,8 +925,9 @@
       <nav id="main-nav" style="display:none">
           <a href="#" data-view="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
           <a href="#" data-view="users"><i class="fas fa-users"></i> Usuários</a>
-          <a href="#" data-view="units"><i class="fas fa-home"></i> Unidades</a>
+          <a href="#" data-view="units"><i class="fas fa-building"></i> Condomínios</a>
           <a href="#" data-view="reservations"><i class="fas fa-calendar-check"></i> Reservas</a>
+          <a href="#" data-view="family"><i class="fas fa-users"></i> Família</a>
           <a href="#" data-view="visitors"><i class="fas fa-user-friends"></i> Visitantes</a>
           <a href="#" data-view="maintenance"><i class="fas fa-tools"></i> Manutenção</a>
           <a href="#" data-view="reports"><i class="fas fa-chart-bar"></i> Relatórios</a>
@@ -1097,7 +1098,7 @@
       </div>
 
       <div id="view-units" class="card hidden fade-in">
-        <h3><i class="fas fa-home"></i> Unidades</h3>
+        <h3><i class="fas fa-building"></i> Condomínios</h3>
         <button id="refresh-units" class="btn-secondary">
           <i class="fas fa-sync-alt"></i> Atualizar
         </button>
@@ -1105,30 +1106,68 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Bloco</th>
-              <th>Número</th>
-              <th>Proprietário</th>
+              <th>Nome</th>
+              <th>CNPJ</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
-        <h4><i class="fas fa-home"></i> Criar Unidade</h4>
+        <h4><i class="fas fa-building"></i> Cadastrar Novo Condomínio</h4>
         <div class="row">
           <div class="form-group">
-            <label for="unit-block">Bloco</label>
-            <input id="unit-block" placeholder="Ex: A, B, C" />
+            <label for="unit-block">Nome do Condomínio</label>
+            <input id="unit-block" placeholder="Ex: Condomínio Residencial" />
           </div>
           <div class="form-group">
-            <label for="unit-number">Número</label>
-            <input id="unit-number" placeholder="Ex: 101, 102" />
+            <label for="unit-number">CNPJ</label>
+            <input id="unit-number" placeholder="00.000.000/0000-00" />
+          </div>
+        </div>
+        <div class="row">
+        <div class="form-group">
+            <label for="unit-address">Endereço</label>
+            <input id="unit-address" placeholder="Rua, número, bairro, cidade" />
+          </div>
+          <div class="form-group">
+            <label for="unit-phone">Telefone</label>
+            <input id="unit-phone" placeholder="(11) 99999-9999" />
           </div>
         </div>
         <div class="form-group">
-          <label for="unit-owner">ID do Proprietário (opcional)</label>
-          <input id="unit-owner" placeholder="ID do usuário proprietário" />
+          <label for="unit-email">Email do Condomínio</label>
+          <input id="unit-email" placeholder="contato@condominio.com" type="email" />
+        </div>
+        <h4>Configurações de Tema</h4>
+        <div class="row">
+          <div class="form-group">
+            <label for="theme-primary">Cor Primária</label>
+            <input id="theme-primary" type="color" value="#1976d2" />
+          </div>
+          <div class="form-group">
+            <label for="theme-secondary">Cor Secundária</label>
+            <input id="theme-secondary" type="color" value="#dc004e" />
+          </div>
+        </div>
+        <h4>Usuário Administrador</h4>
+        <div class="row">
+          <div class="form-group">
+            <label for="admin-name">Nome do Admin</label>
+            <input id="admin-name" placeholder="Nome completo" />
+          </div>
+          <div class="form-group">
+            <label for="admin-email">Email do Admin</label>
+            <input id="admin-email" placeholder="admin@condominio.com" type="email" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="admin-password">Senha do Admin</label>
+          <input id="admin-password" placeholder="Senha segura" type="password" />
         </div>
         <button id="btn-create-unit" class="btn-success">
-          <i class="fas fa-home"></i> Criar Unidade
+          <i class="fas fa-building"></i> Cadastrar Condomínio
         </button>
       </div>
 
@@ -1200,6 +1239,69 @@
         </div>
         <button id="btn-create-res" class="btn-success">
           <i class="fas fa-calendar-plus"></i> Criar Reserva
+        </button>
+      </div>
+
+      <div id="view-family" class="card hidden fade-in">
+        <h3><i class="fas fa-users"></i> Membros da Família</h3>
+        <button id="refresh-family" class="btn-secondary">
+          <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+        <table id="tbl-family">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Parentesco</th>
+              <th>Documento</th>
+              <th>Data de Nascimento</th>
+              <th>Telefone</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <h4><i class="fas fa-user-plus"></i> Adicionar Membro da Família</h4>
+        <div class="row">
+          <div class="form-group">
+            <label for="family-name">Nome Completo</label>
+            <input id="family-name" placeholder="Nome completo" />
+          </div>
+          <div class="form-group">
+            <label for="family-relationship">Parentesco</label>
+            <select id="family-relationship">
+              <option value="">Selecionar parentesco</option>
+              <option value="conjuge">Cônjuge</option>
+              <option value="filho">Filho(a)</option>
+              <option value="pai">Pai</option>
+              <option value="mae">Mãe</option>
+              <option value="irmao">Irmão(ã)</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label for="family-document">CPF</label>
+            <input id="family-document" placeholder="000.000.000-00" />
+          </div>
+          <div class="form-group">
+            <label for="family-birth">Data de Nascimento</label>
+            <input id="family-birth" type="date" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label for="family-phone">Telefone</label>
+            <input id="family-phone" placeholder="(11) 99999-9999" />
+          </div>
+          <div class="form-group">
+            <label for="family-email">Email (opcional)</label>
+            <input id="family-email" placeholder="email@exemplo.com" type="email" />
+          </div>
+        </div>
+        <button id="btn-create-family" class="btn-success">
+          <i class="fas fa-user-plus"></i> Adicionar Membro
         </button>
       </div>
 
