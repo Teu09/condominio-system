@@ -1283,6 +1283,118 @@
     }
   };
 
+  // Dashboard com gráficos interativos
+  let reservationsChart = null;
+  let maintenanceChart = null;
+
+  async function loadDashboard() {
+    try {
+      const [usersRes, unitsRes, reservationsRes, visitorsRes] = await Promise.all([
+        authFetch(API_USER + '/users').catch(() => ({ok: false})),
+        authFetch(API_UNIT + '/units').catch(() => ({ok: false})),
+        authFetch(API_RES + '/reservations').catch(() => ({ok: false})),
+        authFetch(API_VISITORS + '/visitors').catch(() => ({ok: false}))
+      ]);
+
+      const users = usersRes.ok ? await usersRes.json() : [];
+      const units = unitsRes.ok ? await unitsRes.json() : [];
+      const reservations = reservationsRes.ok ? await reservationsRes.json() : [];
+      const visitors = visitorsRes.ok ? await visitorsRes.json() : [];
+
+      document.getElementById('total-users').textContent = users.length;
+      document.getElementById('total-units').textContent = units.length;
+      document.getElementById('total-reservations').textContent = reservations.length;
+      document.getElementById('total-visitors').textContent = visitors.length;
+
+      createReservationsChart(reservations);
+      createMaintenanceChart();
+    } catch (error) {
+      console.error('Erro ao carregar dashboard:', error);
+    }
+  }
+
+  function createReservationsChart(reservations) {
+    const ctx = document.getElementById('reservationsChart');
+    if (!ctx) return;
+
+    if (reservationsChart) reservationsChart.destroy();
+
+    const monthlyData = {};
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    
+    reservations.forEach(res => {
+      const date = new Date(res.start_time);
+      const monthKey = months[date.getMonth()];
+      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+    });
+
+    const data = months.map(month => monthlyData[month] || 0);
+
+    reservationsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [{
+          label: 'Reservas',
+          data: data,
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#667eea',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: { color: '#333', font: { size: 12, weight: '600' } }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { ticks: { color: '#666' }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function createMaintenanceChart() {
+    const ctx = document.getElementById('maintenanceChart');
+    if (!ctx) return;
+
+    if (maintenanceChart) maintenanceChart.destroy();
+
+    maintenanceChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Concluídas', 'Em Andamento', 'Pendentes', 'Canceladas'],
+        datasets: [{
+          data: [45, 25, 20, 10],
+          backgroundColor: ['#4facfe', '#667eea', '#fa709a', '#f5576c'],
+          borderWidth: 0,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#333', font: { size: 12, weight: '600' }, padding: 15 }
+          }
+        }
+      }
+    });
+  }
+
   // Inicialização
   loadTenants();
   

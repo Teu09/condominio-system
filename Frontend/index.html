@@ -7,18 +7,31 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       
       :root {
-        --primary-color: #1976d2;
-        --secondary-color: #dc004e;
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
         --background-color: #f5f5f5;
         --text-color: #333333;
         --card-bg: rgba(255, 255, 255, 0.95);
         --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         --border-radius: 15px;
         --transition: all 0.3s ease;
+        
+        /* Design System Moderno */
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --shadow-soft: 0 8px 25px rgba(0, 0, 0, 0.1);
+        --border-radius-modern: 20px;
+        --border-radius-soft: 12px;
       }
       
       body {
@@ -211,14 +224,14 @@
       }
       
       .card {
-        background: var(--card-bg);
+        background: var(--glass-bg);
         backdrop-filter: blur(20px);
-        border-radius: var(--border-radius);
+        border-radius: var(--border-radius-modern);
         padding: 35px;
         margin-bottom: 30px;
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: var(--transition);
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
       }
@@ -229,20 +242,19 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        height: 4px;
+        background: var(--primary-gradient);
         opacity: 0;
-        transition: var(--transition);
-      }
-
-      .card:hover::before {
-        opacity: 1;
+        transition: all 0.3s ease;
       }
       
       .card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-        border-color: rgba(25, 118, 210, 0.2);
+        box-shadow: var(--shadow-elevated);
+      }
+
+      .card:hover::before {
+        opacity: 1;
       }
       
       .card h3 {
@@ -330,7 +342,7 @@
       }
       
       button {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        background: var(--primary-gradient);
         color: white;
         border: none;
         cursor: pointer;
@@ -339,12 +351,12 @@
         letter-spacing: 1px;
         position: relative;
         overflow: hidden;
-        border-radius: 12px;
+        border-radius: var(--border-radius-soft);
         padding: 16px 24px;
         font-size: 0.95rem;
-        transition: var(--transition);
-        box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--glass-border);
       }
 
       button::before {
@@ -383,15 +395,15 @@
       }
       
       .btn-success {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: var(--success-gradient);
       }
       
       .btn-danger {
-        background: linear-gradient(135deg, #dc3545, #e83e8c);
+        background: var(--secondary-gradient);
       }
       
       .btn-warning {
-        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        background: var(--warning-gradient);
       }
       
       .btn-sm {
@@ -640,18 +652,78 @@
         gap: 25px;
         margin-bottom: 40px;
       }
-      
-      .stat-card {
-        background: var(--card-bg);
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+      }
+
+      .chart-container {
+        background: var(--glass-bg);
         backdrop-filter: blur(20px);
-        border-radius: var(--border-radius);
-        padding: 30px;
-        text-align: center;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
+        border-radius: var(--border-radius-modern);
+        padding: 25px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .chart-container:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-elevated);
+      }
+
+      .chart-container:hover::before {
+        opacity: 1;
+      }
+
+      .chart-container h4 {
+        margin-bottom: 20px;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chart-container h4 i {
+        color: var(--primary-color);
+      }
+
+      .chart-container canvas {
+        max-height: 300px;
+        width: 100% !important;
+        height: auto !important;
+      }
+      
+      .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: var(--border-radius-modern);
+        padding: 30px;
+        text-align: center;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--glass-border);
       }
 
       .stat-card::before {
@@ -661,7 +733,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        background: var(--primary-gradient);
         transform: scaleX(0);
         transition: transform 0.3s ease;
       }
@@ -672,18 +744,17 @@
       
       .stat-card:hover {
         transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-        border-color: rgba(25, 118, 210, 0.3);
+        box-shadow: var(--shadow-elevated);
       }
       
       .stat-card i {
         font-size: 3rem;
         margin-bottom: 20px;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        background: var(--primary-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        transition: var(--transition);
+        transition: all 0.3s ease;
       }
 
       .stat-card:hover i {
@@ -906,6 +977,179 @@
       ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
       }
+      /* Responsividade Mobile */
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+          margin: 0;
+        }
+
+        .banner {
+          padding: 15px 20px;
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .logo {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .logo h1 {
+          font-size: 1.5rem;
+        }
+
+        .tenant-info {
+          flex-direction: column;
+          text-align: center;
+          padding: 10px;
+        }
+
+        nav {
+          flex-direction: column;
+          gap: 10px;
+          padding: 15px;
+        }
+
+        nav a {
+          padding: 12px 20px;
+          font-size: 0.9rem;
+        }
+
+        .card {
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .stat-card {
+          padding: 20px;
+        }
+
+        .stat-card i {
+          font-size: 2.5rem;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .form-group {
+          margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+          padding: 12px 15px;
+          font-size: 16px; /* Evita zoom no iOS */
+        }
+
+        button {
+          padding: 12px 20px;
+          font-size: 0.9rem;
+          width: 100%;
+          margin: 5px 0;
+        }
+
+        table {
+          font-size: 0.8rem;
+        }
+
+        th, td {
+          padding: 10px 8px;
+        }
+
+        .alert {
+          padding: 15px;
+          margin: 10px 0;
+        }
+
+        .hidden {
+          display: none !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .banner {
+          padding: 10px 15px;
+        }
+
+        .logo h1 {
+          font-size: 1.3rem;
+        }
+
+        .card {
+          padding: 15px;
+        }
+
+        .stat-card {
+          padding: 15px;
+        }
+
+        .stat-card i {
+          font-size: 2rem;
+        }
+
+        .stat-card h3 {
+          font-size: 1.8rem;
+        }
+
+        .stat-card p {
+          font-size: 0.9rem;
+        }
+
+        table {
+          font-size: 0.75rem;
+        }
+
+        th, td {
+          padding: 8px 6px;
+        }
+      }
+
+      /* Animações de entrada */
+      .slide-in-right {
+        animation: slideInRight 0.5s ease-out;
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+      }
+
+      .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+        height: 20px;
+        margin: 10px 0;
+      }
+
+      @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
     </style>
   </head>
   <body>
@@ -1047,6 +1291,18 @@
             <i class="fas fa-user-friends"></i>
             <h3 id="total-visitors">-</h3>
             <p>Visitantes</p>
+          </div>
+        </div>
+        
+        <!-- Gráficos do Dashboard -->
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h4><i class="fas fa-chart-line"></i> Reservas por Mês</h4>
+            <canvas id="reservationsChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4><i class="fas fa-chart-pie"></i> Status das Manutenções</h4>
+            <canvas id="maintenanceChart"></canvas>
           </div>
         </div>
       </div>
