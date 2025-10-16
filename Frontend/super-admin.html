@@ -532,6 +532,83 @@
         color: white;
       }
 
+      /* Permissões */
+      .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin: 25px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--border-radius-soft);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .permission-category {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: var(--border-radius-soft);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .permission-category h5 {
+        color: var(--text-color);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 8px;
+      }
+
+      .permission-category h5 i {
+        color: var(--primary-color);
+      }
+
+      .permission-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .permission-item:hover {
+        background: rgba(156, 39, 176, 0.1);
+        transform: translateX(5px);
+      }
+
+      .permission-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+        cursor: pointer;
+      }
+
+      .permission-item span {
+        color: var(--text-color);
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .permission-item input[type="checkbox"]:checked + span {
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+
+      /* Botões pequenos */
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+      }
+
       /* Responsividade */
       @media (max-width: 768px) {
         .banner {
@@ -552,6 +629,10 @@
         }
 
         .row {
+          grid-template-columns: 1fr;
+        }
+
+        .permissions-grid {
           grid-template-columns: 1fr;
         }
 
@@ -776,6 +857,149 @@
               <tbody></tbody>
             </table>
           </div>
+          
+          <!-- Criação de Usuários -->
+          <div class="card">
+            <h3><i class="fas fa-user-plus"></i> Criar Novo Usuário</h3>
+            <form id="user-form">
+              <div class="row">
+                <div class="form-group">
+                  <label for="new-user-name">Nome Completo</label>
+                  <input id="new-user-name" placeholder="Nome completo do usuário" required />
+                </div>
+                <div class="form-group">
+                  <label for="new-user-email">Email</label>
+                  <input id="new-user-email" placeholder="usuario@email.com" type="email" required />
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group">
+                  <label for="new-user-password">Senha</label>
+                  <input id="new-user-password" placeholder="Senha segura" type="password" required />
+                </div>
+                <div class="form-group">
+                  <label for="new-user-tenant">Condomínio</label>
+                  <select id="new-user-tenant" required>
+                    <option value="">Selecione um condomínio</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group">
+                  <label for="new-user-role">Função</label>
+                  <select id="new-user-role" required>
+                    <option value="">Selecione uma função</option>
+                    <option value="admin">Administrador</option>
+                    <option value="morador">Morador</option>
+                    <option value="sindico">Síndico</option>
+                    <option value="porteiro">Porteiro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="new-user-status">Status</label>
+                  <select id="new-user-status">
+                    <option value="true">Ativo</option>
+                    <option value="false">Inativo</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Permissões Avançadas -->
+              <h4><i class="fas fa-key"></i> Permissões Específicas</h4>
+              <div class="permissions-grid">
+                <div class="permission-category">
+                  <h5><i class="fas fa-users"></i> Gestão de Usuários</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="manage_users">
+                    <span>Gerenciar usuários</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="create_users">
+                    <span>Criar usuários</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="edit_users">
+                    <span>Editar usuários</span>
+                  </label>
+                </div>
+                
+                <div class="permission-category">
+                  <h5><i class="fas fa-building"></i> Gestão de Unidades</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="manage_units">
+                    <span>Gerenciar unidades</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="create_units">
+                    <span>Criar unidades</span>
+                  </label>
+                </div>
+                
+                <div class="permission-category">
+                  <h5><i class="fas fa-calendar-check"></i> Reservas</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="manage_reservations">
+                    <span>Gerenciar reservas</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="create_reservations">
+                    <span>Criar reservas</span>
+                  </label>
+                </div>
+                
+                <div class="permission-category">
+                  <h5><i class="fas fa-user-friends"></i> Visitantes</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="manage_visitors">
+                    <span>Gerenciar visitantes</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="register_visitors">
+                    <span>Registrar visitantes</span>
+                  </label>
+                </div>
+                
+                <div class="permission-category">
+                  <h5><i class="fas fa-tools"></i> Manutenção</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="manage_maintenance">
+                    <span>Gerenciar manutenção</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="create_maintenance">
+                    <span>Criar ordens de manutenção</span>
+                  </label>
+                </div>
+                
+                <div class="permission-category">
+                  <h5><i class="fas fa-chart-bar"></i> Relatórios</h5>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="view_reports">
+                    <span>Visualizar relatórios</span>
+                  </label>
+                  <label class="permission-item">
+                    <input type="checkbox" name="permissions" value="export_reports">
+                    <span>Exportar relatórios</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label for="new-user-phone">Telefone (opcional)</label>
+                  <input id="new-user-phone" placeholder="(11) 99999-9999" />
+                </div>
+                <div class="form-group">
+                  <label for="new-user-document">CPF (opcional)</label>
+                  <input id="new-user-document" placeholder="000.000.000-00" />
+                </div>
+              </div>
+              
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-user-plus"></i> Criar Usuário
+              </button>
+            </form>
+          </div>
         </div>
 
         <!-- Relatórios -->
@@ -870,7 +1094,10 @@
         
         if (view === 'dashboard') loadDashboard();
         if (view === 'tenants') loadTenants();
-        if (view === 'users') loadUsers();
+        if (view === 'users') {
+          loadUsers();
+          loadTenantsForUsers();
+        }
         if (view === 'reports') loadReports();
       }
 
@@ -1084,12 +1311,42 @@
                 <td><span class="status-badge ${user.is_active ? 'status-confirmed' : 'status-cancelled'}">${user.is_active ? 'Ativo' : 'Inativo'}</span></td>
                 <td>
                   <button onclick="editUser(${user.id})" class="btn-primary btn-sm">Editar</button>
+                  <button onclick="deleteUser(${user.id})" class="btn-secondary btn-sm" style="margin-left: 5px;">Excluir</button>
                 </td>
               </tr>
             `);
           });
         } catch (error) {
           showAlert('Erro de conexão', 'error');
+        }
+      }
+
+      async function loadTenantsForUsers() {
+        try {
+          const res = await authFetch(API_TENANTS + '/');
+          if (!res.ok) return;
+          
+          const tenants = await res.json();
+          const select = document.getElementById('new-user-tenant');
+          const filterSelect = document.getElementById('filter-tenant');
+          
+          // Limpar opções existentes
+          select.innerHTML = '<option value="">Selecione um condomínio</option>';
+          filterSelect.innerHTML = '<option value="">Todos os condomínios</option>';
+          
+          tenants.forEach(tenant => {
+            const option = document.createElement('option');
+            option.value = tenant.id;
+            option.textContent = tenant.name;
+            select.appendChild(option);
+            
+            const filterOption = document.createElement('option');
+            filterOption.value = tenant.id;
+            filterOption.textContent = tenant.name;
+            filterSelect.appendChild(filterOption);
+          });
+        } catch (error) {
+          console.error('Erro ao carregar condomínios:', error);
         }
       }
 
@@ -1125,6 +1382,26 @@
 
       window.editUser = function(userId) {
         showAlert('Funcionalidade de edição será implementada em breve', 'info');
+      };
+
+      window.deleteUser = async function(userId) {
+        if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+        
+        try {
+          const res = await authFetch(`${API_USERS}/users/${userId}`, {
+            method: 'DELETE'
+          });
+          
+          if (res.ok) {
+            showAlert('Usuário excluído com sucesso!', 'success');
+            loadUsers();
+            loadDashboard(); // Atualizar dashboard
+          } else {
+            showAlert('Erro ao excluir usuário', 'error');
+          }
+        } catch (error) {
+          showAlert('Erro de conexão', 'error');
+        }
       };
 
       // Event listeners
@@ -1183,6 +1460,51 @@
         }
       };
 
+      // Formulário de usuário
+      document.getElementById('user-form').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        // Coletar permissões selecionadas
+        const selectedPermissions = Array.from(document.querySelectorAll('input[name="permissions"]:checked'))
+          .map(checkbox => checkbox.value);
+        
+        const formData = {
+          full_name: document.getElementById('new-user-name').value,
+          email: document.getElementById('new-user-email').value,
+          password: document.getElementById('new-user-password').value,
+          tenant_id: parseInt(document.getElementById('new-user-tenant').value),
+          role: document.getElementById('new-user-role').value,
+          is_active: document.getElementById('new-user-status').value === 'true',
+          permissions: selectedPermissions,
+          phone: document.getElementById('new-user-phone').value || null,
+          document: document.getElementById('new-user-document').value || null
+        };
+
+        const btn = document.querySelector('#user-form button[type="submit"]');
+        setLoading(btn, true, 'Criando usuário...');
+
+        try {
+          const res = await authFetch(API_USERS + '/users', {
+            method: 'POST',
+            body: JSON.stringify(formData)
+          });
+
+          if (res.ok) {
+            showAlert('Usuário criado com sucesso!', 'success');
+            document.getElementById('user-form').reset();
+            loadUsers();
+            loadDashboard();
+          } else {
+            const error = await res.json();
+            showAlert('Erro: ' + (error.detail || 'Erro desconhecido'), 'error');
+          }
+        } catch (error) {
+          showAlert('Erro de conexão', 'error');
+        } finally {
+          setLoading(btn, false);
+        }
+      };
+
       // Relatórios
       document.getElementById('btn-generate-report').onclick = async () => {
         const reportType = document.getElementById('report-type').value;
@@ -1207,6 +1529,38 @@
 
       // Refresh buttons
       document.getElementById('refresh-tenants').onclick = loadTenants;
+
+      // Busca e filtro de usuários
+      document.getElementById('search-user').oninput = (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#tbl-users tbody tr');
+        
+        rows.forEach(row => {
+          const name = row.cells[1].textContent.toLowerCase();
+          const email = row.cells[2].textContent.toLowerCase();
+          
+          if (name.includes(searchTerm) || email.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      };
+
+      document.getElementById('filter-tenant').onchange = (e) => {
+        const selectedTenant = e.target.value;
+        const rows = document.querySelectorAll('#tbl-users tbody tr');
+        
+        rows.forEach(row => {
+          const tenantId = row.cells[3].textContent;
+          
+          if (!selectedTenant || tenantId.includes(selectedTenant)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      };
 
       // Store original button texts
       document.querySelectorAll('button').forEach(btn => {
