@@ -5,7 +5,8 @@
   "api_reservations": "/api/reservations",
   "api_visitors": "/api/visitors",
   "api_maintenance": "/api/maintenance",
-  "api_reports": "/api/reports"
+  "api_reports": "/api/reports",
+  "api_tenants": "/api/tenants"
 }
 
 

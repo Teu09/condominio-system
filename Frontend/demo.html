@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CondoSys - Demonstração de Temas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-color: #1976d2;
+            --secondary-color: #dc004e;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --border-radius: 15px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .theme-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .theme-preview {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .color-swatch::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .theme-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .theme-info p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .theme-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .theme-features li {
+            padding: 8px 0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-features li i {
+            color: var(--primary-color);
+            width: 16px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25, 118, 210, 0.4);
+        }
+
+        .stats-demo {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .stat-item i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-item h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            color: #666;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .themes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .theme-preview {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 CondoSys</h1>
+            <p>Sistema de Gestão Condominial Multi-Tenant</p>
+        </div>
+
+        <div class="themes-grid">
+            <div class="theme-card">
+                <div class="theme-info">
+                    <h3>Condomínio Alphaline</h3>
+                    <p>Tema corporativo moderno com cores azuis e vermelhas, ideal para condomínios empresariais e residenciais de alto padrão.</p>
+                    <div class="theme-preview">
+                        <div class="color-swatch" style="background: #1976d2;" data-color="#1976d2"></div>
+                        <div class="color-swatch" style="background: #dc004e;" data-color="#dc004e"></div>
+                        <div class="color-swatch" style="background: #f5f5f5;" data-color="#f5f5f5"></div>
+                    </div>
+                    <ul class="theme-features">
+                        <li><i class="fas fa-check"></i> Design corporativo</li>
+                        <li><i class="fas fa-check"></i> Cores profissionais</li>
+                        <li><i class="fas fa-check"></i> Interface moderna</li>
+                    </ul>
+                    <a href="index.html" class="demo-button">Ver Demonstração</a>
+                </div>
+            </div>
+
+            <div class="theme-card">
+                <div class="theme-info">
+                    <h3>Condomínio das Araras</h3>
+                    <p>Tema natural e acolhedor com tons verdes e laranjas, perfeito para condomínios residenciais com foco em sustentabilidade.</p>
+                    <div class="theme-preview">
+                        <div class="color-swatch" style="background: #2e7d32;" data-color="#2e7d32"></div>
+                        <div class="color-swatch" style="background: #ff6f00;" data-color="#ff6f00"></div>
+                        <div class="color-swatch" style="background: #f1f8e9;" data-color="#f1f8e9"></div>
+                    </div>
+                    <ul class="theme-features">
+                        <li><i class="fas fa-check"></i> Cores naturais</li>
+                        <li><i class="fas fa-check"></i> Ambiente acolhedor</li>
+                        <li><i class="fas fa-check"></i> Foco sustentável</li>
+                    </ul>
+                    <a href="index.html" class="demo-button">Ver Demonstração</a>
+                </div>
+            </div>
+
+            <div class="theme-card">
+                <div class="theme-info">
+                    <h3>Seu Condomínio</h3>
+                    <p>Personalize completamente o visual do seu condomínio com cores, logos e configurações únicas para criar uma identidade própria.</p>
+                    <div class="theme-preview">
+                        <div class="color-swatch" style="background: linear-gradient(45deg, #667eea, #764ba2);" data-color="Personalizado"></div>
+                        <div class="color-swatch" style="background: linear-gradient(45deg, #f093fb, #f5576c);" data-color="Personalizado"></div>
+                        <div class="color-swatch" style="background: linear-gradient(45deg, #4facfe, #00f2fe);" data-color="Personalizado"></div>
+                    </div>
+                    <ul class="theme-features">
+                        <li><i class="fas fa-check"></i> Totalmente personalizável</li>
+                        <li><i class="fas fa-check"></i> Logo própria</li>
+                        <li><i class="fas fa-check"></i> Cores únicas</li>
+                    </ul>
+                    <a href="index.html" class="demo-button">Criar Condomínio</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-demo">
+            <h2 style="margin-bottom: 20px; color: var(--text-color);">Funcionalidades do Sistema</h2>
+            <p style="color: #666; margin-bottom: 30px;">Um sistema completo para gestão condominial com interface moderna e responsiva</p>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <h4>Multi-Tenant</h4>
+                    <p>Múltiplos condomínios</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-palette"></i>
+                    <h4>Temas Personalizados</h4>
+                    <p>Cores e identidade únicas</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Segurança</h4>
+                    <p>Dados isolados e seguros</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>Responsivo</h4>
+                    <p>Funciona em qualquer dispositivo</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-cogs"></i>
+                    <h4>Configurável</h4>
+                    <p>Permissões e roles flexíveis</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Relatórios</h4>
+                    <p>Análises e estatísticas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

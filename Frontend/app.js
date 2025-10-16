@@ -24,8 +24,47 @@
   const API_VISITORS = cfg.api_visitors || '/api/visitors';
   const API_MAINTENANCE = cfg.api_maintenance || '/api/maintenance';
   const API_REPORTS = cfg.api_reports || '/api/reports';
+  const API_TENANTS = cfg.api_tenants || '/api/tenants';
 
   function showNav(show){ document.getElementById('main-nav').style.display = show? 'block':'none' }
+
+  // Carregar lista de tenants
+  async function loadTenants() {
+    try {
+      const res = await fetch(API_TENANTS + '/tenants');
+      if (!res.ok) return;
+      const tenants = await res.json();
+      const select = document.getElementById('tenant-select');
+      select.innerHTML = '<option value="">Selecione um condomínio</option>';
+      tenants.forEach(tenant => {
+        const option = document.createElement('option');
+        option.value = tenant.id;
+        option.textContent = tenant.name;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Erro ao carregar tenants:', error);
+    }
+  }
+
+  // Aplicar tema do tenant
+  function applyTenantTheme(themeConfig) {
+    if (!themeConfig) return;
+    
+    const root = document.documentElement;
+    if (themeConfig.primary_color) {
+      root.style.setProperty('--primary-color', themeConfig.primary_color);
+    }
+    if (themeConfig.secondary_color) {
+      root.style.setProperty('--secondary-color', themeConfig.secondary_color);
+    }
+    if (themeConfig.background_color) {
+      root.style.setProperty('--background-color', themeConfig.background_color);
+    }
+    if (themeConfig.text_color) {
+      root.style.setProperty('--text-color', themeConfig.text_color);
+    }
+  }
 
   function adjustNavByRole(){
     const role = localStorage.getItem('role');
@@ -67,12 +106,12 @@
   }
 
   async function login(){
-    const company = document.getElementById('company').value;
+    const tenantId = document.getElementById('tenant-select').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
-    if (!email || !password) {
-      showAlert('Por favor, preencha email e senha', 'error');
+    if (!tenantId || !email || !password) {
+      showAlert('Por favor, preencha todos os campos', 'error');
       return;
     }
 
@@ -83,7 +122,7 @@
       const res = await fetch(API_AUTH + '/login', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
-        body: JSON.stringify({company,email,password})
+        body: JSON.stringify({tenant_id: parseInt(tenantId), email, password})
       });
       const data = await res.json();
       
@@ -95,6 +134,18 @@
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('role', data.user.role);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('tenant', JSON.stringify(data.tenant));
+      
+      // Aplicar tema do tenant
+      if (data.tenant && data.tenant.theme_config) {
+        applyTenantTheme(data.tenant.theme_config);
+      }
+      
+      // Mostrar informações do tenant
+      if (data.tenant) {
+        document.getElementById('tenant-name').textContent = data.tenant.name;
+        document.getElementById('tenant-info').style.display = 'flex';
+      }
       
       document.getElementById('login').classList.add('hidden');
       showNav(true);
@@ -108,7 +159,95 @@
     }
   }
 
+  // Cadastro de tenant
+  async function registerTenant() {
+    const name = document.getElementById('tenant-name').value;
+    const cnpj = document.getElementById('tenant-cnpj').value;
+    const address = document.getElementById('tenant-address').value;
+    const phone = document.getElementById('tenant-phone').value;
+    const email = document.getElementById('tenant-email').value;
+    const primaryColor = document.getElementById('theme-primary').value;
+    const secondaryColor = document.getElementById('theme-secondary').value;
+    const adminName = document.getElementById('admin-name').value;
+    const adminEmail = document.getElementById('admin-email').value;
+    const adminPassword = document.getElementById('admin-password').value;
+    
+    if (!name || !cnpj || !address || !phone || !email || !adminName || !adminEmail || !adminPassword) {
+      showAlert('Por favor, preencha todos os campos obrigatórios', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btn-register-tenant');
+    setLoading(btn, true);
+    
+    try {
+      const tenantData = {
+        name,
+        cnpj,
+        address,
+        phone,
+        email,
+        theme_config: {
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
+          background_color: '#f5f5f5',
+          text_color: '#333333'
+        },
+        admin_email: adminEmail,
+        admin_password: adminPassword,
+        admin_name: adminName
+      };
+      
+      const res = await fetch(API_TENANTS + '/tenants', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(tenantData)
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        showAlert('Erro ao cadastrar: ' + (error.detail || 'Erro desconhecido'), 'error');
+        return;
+      }
+      
+      showAlert('Condomínio cadastrado com sucesso!', 'success');
+      
+      // Limpar formulário
+      document.getElementById('tenant-name').value = '';
+      document.getElementById('tenant-cnpj').value = '';
+      document.getElementById('tenant-address').value = '';
+      document.getElementById('tenant-phone').value = '';
+      document.getElementById('tenant-email').value = '';
+      document.getElementById('admin-name').value = '';
+      document.getElementById('admin-email').value = '';
+      document.getElementById('admin-password').value = '';
+      
+      // Recarregar lista de tenants
+      await loadTenants();
+      
+      // Voltar para login
+      document.getElementById('tenant-registration').classList.add('hidden');
+      document.getElementById('login').classList.remove('hidden');
+      
+    } catch (error) {
+      showAlert('Erro de conexão', 'error');
+    } finally {
+      setLoading(btn, false);
+    }
+  }
+
   document.getElementById('btn-login').onclick = login;
+  document.getElementById('btn-register-tenant').onclick = registerTenant;
+  document.getElementById('show-tenant-registration').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('tenant-registration').classList.remove('hidden');
+  };
+  document.getElementById('back-to-login').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('tenant-registration').classList.add('hidden');
+    document.getElementById('login').classList.remove('hidden');
+  };
   document.getElementById('logout').onclick = ()=>{ 
     localStorage.clear(); 
     location.reload(); 
@@ -819,11 +958,27 @@
     btn.setAttribute('data-original-text', btn.innerHTML);
   });
 
+  // Inicialização
+  loadTenants();
+  
   // Auto-login if token exists
   if(localStorage.getItem('token')){ 
     document.getElementById('login').classList.add('hidden'); 
     showNav(true); 
     adjustNavByRole();
+    
+    // Aplicar tema salvo
+    const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+    if (tenant.theme_config) {
+      applyTenantTheme(tenant.theme_config);
+    }
+    
+    // Mostrar informações do tenant
+    if (tenant.name) {
+      document.getElementById('tenant-name').textContent = tenant.name;
+      document.getElementById('tenant-info').style.display = 'flex';
+    }
+    
     navigateTo('dashboard'); 
   }
 })();
