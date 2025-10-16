@@ -66,55 +66,22 @@
     }
   }
 
-  function applySuperAdminTheme() {
-    const root = document.documentElement;
-    root.style.setProperty('--primary-color', '#9c27b0');
-    root.style.setProperty('--secondary-color', '#ff5722');
-    root.style.setProperty('--background-color', '#f3e5f5');
-    root.style.setProperty('--text-color', '#4a148c');
-  }
 
   function adjustNavByRole(){
     const role = localStorage.getItem('role');
-    const isSuperAdmin = localStorage.getItem('is_super_admin') === 'true';
     const nav = document.getElementById('main-nav');
     if (!nav) return;
     
     // Show all by default
     nav.querySelectorAll('[data-view], #logout').forEach(a=> a.style.display = '');
     
-    // Super admin tem acesso a tudo + link para condomínios
-    if (isSuperAdmin) {
-      addSuperAdminLinks();
-    } else if (role === 'morador'){
+    // Hide admin-only items for moradores
+    if (role === 'morador'){
       const hideViews = ['users','reports','units','visitors','maintenance'];
       hideViews.forEach(v => {
         const el = nav.querySelector(`[data-view="${v}"]`);
         if (el) el.style.display = 'none';
       });
-    }
-  }
-
-  function addSuperAdminLinks() {
-    const nav = document.getElementById('main-nav');
-    if (!nav) return;
-
-    // Verificar se já existe o link de tenants
-    if (nav.querySelector('[data-view="tenants"]')) return;
-
-    // Criar link para gerenciar condomínios
-    const tenantsLink = document.createElement('a');
-    tenantsLink.href = '#';
-    tenantsLink.setAttribute('data-view', 'tenants');
-    tenantsLink.innerHTML = '<i class="fas fa-building"></i> Condomínios';
-    tenantsLink.style.display = 'block';
-    
-    // Inserir antes do link de logout
-    const logoutLink = nav.querySelector('#logout');
-    if (logoutLink) {
-      nav.insertBefore(tenantsLink, logoutLink);
-    } else {
-      nav.appendChild(tenantsLink);
     }
   }
 
@@ -155,22 +122,11 @@
     setLoading(btn, true);
     
     try {
-      let res;
-      
-      // Verificar se é super admin
-      if (tenantId === 'super_admin') {
-        res = await fetch(API_AUTH + '/super-admin-login', {
-          method:'POST', 
-          headers:{'content-type':'application/json'}, 
-          body: JSON.stringify({email, password})
-        });
-      } else {
-        res = await fetch(API_AUTH + '/login', {
-          method:'POST', 
-          headers:{'content-type':'application/json'}, 
-          body: JSON.stringify({tenant_id: parseInt(tenantId), email, password})
-        });
-      }
+      const res = await fetch(API_AUTH + '/login', {
+        method:'POST', 
+        headers:{'content-type':'application/json'}, 
+        body: JSON.stringify({tenant_id: parseInt(tenantId), email, password})
+      });
       
       const data = await res.json();
       
@@ -183,22 +139,15 @@
       localStorage.setItem('role', data.user.role);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('tenant', JSON.stringify(data.tenant));
-      localStorage.setItem('is_super_admin', data.user.is_super_admin || false);
       
-      // Aplicar tema do tenant (se não for super admin)
+      // Aplicar tema do tenant
       if (data.tenant && data.tenant.theme_config) {
         applyTenantTheme(data.tenant.theme_config);
-      } else if (data.user.is_super_admin) {
-        // Tema padrão para super admin
-        applySuperAdminTheme();
       }
       
       // Mostrar informações do tenant
       if (data.tenant) {
         document.getElementById('tenant-name').textContent = data.tenant.name;
-        document.getElementById('tenant-info').style.display = 'flex';
-      } else if (data.user.is_super_admin) {
-        document.getElementById('tenant-name').textContent = 'Super Administrador';
         document.getElementById('tenant-info').style.display = 'flex';
       }
       
@@ -314,7 +263,7 @@
   });
 
   function hideAll(){
-    ['dashboard','users','units','reservations','visitors','maintenance','reports','tenants'].forEach(v => 
+    ['dashboard','users','units','reservations','visitors','maintenance','reports'].forEach(v => 
       document.getElementById('view-'+v).classList.add('hidden')
     ) 
   }
@@ -330,7 +279,6 @@
     if(view==='visitors') loadVisitors();
     if(view==='maintenance') loadMaintenance();
     if(view==='reports') loadReports();
-    if(view==='tenants') loadTenantsList();
   }
 
   async function authFetch(url, opts={}){
@@ -1014,72 +962,6 @@
     btn.setAttribute('data-original-text', btn.innerHTML);
   });
 
-  // Funções para gerenciar condomínios (Super Admin)
-  async function loadTenantsList() {
-    try {
-      const res = await fetch(API_TENANTS + '/');
-      const tenants = await res.json();
-      
-      const container = document.getElementById('tenants-list');
-      if (tenants.length === 0) {
-        container.innerHTML = '<p>Nenhum condomínio cadastrado.</p>';
-        return;
-      }
-      
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>CNPJ</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tenants.map(tenant => `
-              <tr>
-                <td>${tenant.name}</td>
-                <td>${tenant.cnpj}</td>
-                <td>${tenant.email}</td>
-                <td><span class="status-badge ${tenant.is_active ? 'status-confirmed' : 'status-cancelled'}">${tenant.is_active ? 'Ativo' : 'Inativo'}</span></td>
-                <td>
-                  <button onclick="toggleTenantStatus(${tenant.id}, ${tenant.is_active})" class="btn btn-sm ${tenant.is_active ? 'btn-warning' : 'btn-success'}">
-                    ${tenant.is_active ? 'Desativar' : 'Ativar'}
-                  </button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    } catch (error) {
-      document.getElementById('tenants-list').innerHTML = '<p>Erro ao carregar condomínios.</p>';
-    }
-  }
-
-  async function toggleTenantStatus(tenantId, currentStatus) {
-    try {
-      const res = await fetch(`${API_TENANTS}/${tenantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ is_active: !currentStatus })
-      });
-      
-      if (res.ok) {
-        showAlert(`Condomínio ${!currentStatus ? 'ativado' : 'desativado'} com sucesso!`, 'success');
-        loadTenantsList();
-      } else {
-        showAlert('Erro ao alterar status do condomínio', 'error');
-      }
-    } catch (error) {
-      showAlert('Erro de conexão', 'error');
-    }
-  }
 
   // Inicialização
   loadTenants();
@@ -1094,64 +976,15 @@
     const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
     if (tenant.theme_config) {
       applyTenantTheme(tenant.theme_config);
-    } else if (localStorage.getItem('is_super_admin') === 'true') {
-      applySuperAdminTheme();
     }
     
     // Mostrar informações do tenant
     if (tenant.name) {
       document.getElementById('tenant-name').textContent = tenant.name;
       document.getElementById('tenant-info').style.display = 'flex';
-    } else if (localStorage.getItem('is_super_admin') === 'true') {
-      document.getElementById('tenant-name').textContent = 'Super Administrador';
-      document.getElementById('tenant-info').style.display = 'flex';
     }
     
     navigateTo('dashboard'); 
   }
 
-  // Event listener para formulário de condomínios (Super Admin)
-  const tenantForm = document.getElementById('tenant-form');
-  if (tenantForm) {
-    tenantForm.onsubmit = async (e) => {
-      e.preventDefault();
-      
-      const tenantData = {
-        name: document.getElementById('new-tenant-name').value,
-        cnpj: document.getElementById('new-tenant-cnpj').value,
-        address: document.getElementById('new-tenant-address').value,
-        phone: document.getElementById('new-tenant-phone').value,
-        email: document.getElementById('new-tenant-email').value,
-        theme_config: {
-          primary_color: document.getElementById('new-theme-primary').value,
-          secondary_color: document.getElementById('new-theme-secondary').value
-        },
-        admin_name: document.getElementById('new-admin-name').value,
-        admin_email: document.getElementById('new-admin-email').value,
-        admin_password: document.getElementById('new-admin-password').value
-      };
-      
-      try {
-        const res = await fetch(API_TENANTS + '/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(tenantData)
-        });
-        
-        if (res.ok) {
-          showAlert('Condomínio cadastrado com sucesso!', 'success');
-          tenantForm.reset();
-          loadTenantsList();
-        } else {
-          const error = await res.json();
-          showAlert(error.detail || 'Erro ao cadastrar condomínio', 'error');
-        }
-      } catch (error) {
-        showAlert('Erro de conexão', 'error');
-      }
-    };
-  }
 })();

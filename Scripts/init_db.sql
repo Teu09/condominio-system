@@ -18,14 +18,13 @@ CREATE TABLE IF NOT EXISTS tenants (
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   tenant_id INTEGER REFERENCES tenants(id),
-  email TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   full_name TEXT,
   role TEXT DEFAULT 'resident',
   permissions JSONB DEFAULT '[]',
   is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT now(),
-  UNIQUE(tenant_id, email)
+  created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS units (
@@ -95,7 +94,7 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO users (tenant_id, email, password, full_name, role, permissions) VALUES
 (1, 'admin@alphaline.com', 'admin', 'Administrador Alphaline', 'admin', '["all"]'),
 (2, 'admin@araras.com', 'admin', 'Administrador das Araras', 'admin', '["all"]')
-ON CONFLICT (tenant_id, email) DO NOTHING;
+ON CONFLICT (email) DO NOTHING;
 
 -- seed some sample data for testing
 INSERT INTO units (tenant_id, block, number, owner_id) VALUES
