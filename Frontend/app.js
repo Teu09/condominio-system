@@ -31,7 +31,7 @@
   // Carregar lista de tenants
   async function loadTenants() {
     try {
-      const res = await fetch(API_TENANTS + '/tenants');
+      const res = await fetch(API_TENANTS + '/');
       if (!res.ok) return;
       const tenants = await res.json();
       const select = document.getElementById('tenant-select');
@@ -212,7 +212,7 @@
         admin_name: adminName
       };
       
-      const res = await fetch(API_TENANTS + '/tenants', {
+      const res = await fetch(API_TENANTS + '/', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(tenantData)
@@ -310,10 +310,10 @@
   async function loadDashboard() {
     try {
       const [usersRes, unitsRes, reservationsRes, visitorsRes] = await Promise.all([
-        authFetch(API_USER + '/users'),
-        authFetch(API_UNIT + '/units'),
-        authFetch(API_RES + '/reservations'),
-        authFetch(API_VISITORS + '/visitors')
+        authFetch(API_USER + '/'),
+        authFetch(API_UNIT + '/'),
+        authFetch(API_RES + '/'),
+        authFetch(API_VISITORS + '/')
       ]);
 
       const users = usersRes.ok ? await usersRes.json() : [];
@@ -332,7 +332,7 @@
 
   // Users
   async function loadUsers(){
-    const res = await authFetch(API_USER + '/users');
+    const res = await authFetch(API_USER + '/');
     if (!res.ok){ showAlert('Erro ao listar usuários', 'error'); return; }
     const users = await res.json();
     const tbody = document.querySelector('#tbl-users tbody'); 
@@ -357,7 +357,7 @@
     setLoading(btn, true);
     
     try {
-      const res = await authFetch(API_USER + '/users', {
+      const res = await authFetch(API_USER + '/', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
         body: JSON.stringify({email,password,full_name,role})
@@ -409,7 +409,7 @@
         </tr>`));
     } else {
       // Para outros usuários, carregar unidades normais
-      const res = await authFetch(API_UNIT + '/units');
+      const res = await authFetch(API_UNIT + '/');
       if (!res.ok){ showAlert('Erro ao listar unidades', 'error'); return; }
       const units = await res.json();
       const tbody = document.querySelector('#tbl-units tbody'); 
@@ -558,7 +558,7 @@
   // Reservations
   async function loadReservations(){
     const areaFilter = (document.getElementById('list-area')||{}).value || '';
-    const res = await authFetch(API_RES + '/reservations');
+    const res = await authFetch(API_RES + '/');
     if (!res.ok){ showAlert('Erro ao listar reservas', 'error'); return; }
     let rows = await res.json();
     if (areaFilter) rows = rows.filter(r=> (r.area||'').toLowerCase().includes(areaFilter.toLowerCase()));
@@ -612,7 +612,7 @@
     try {
       // availability check
       const qs = new URLSearchParams({ area, start_time: start, end_time: end }).toString();
-      const availabilityRes = await authFetch(API_RES + `/reservations/availability?${qs}`);
+      const availabilityRes = await authFetch(API_RES + `/availability?${qs}`);
       if (availabilityRes.ok){
         const avail = await availabilityRes.json();
         if (!avail.available){
@@ -622,7 +622,7 @@
         }
       }
       const body = {unit_id, area, start_time: start, end_time: end};
-      const res = await authFetch(API_RES + '/reservations', {
+      const res = await authFetch(API_RES + '/', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
         body: JSON.stringify(body)
@@ -685,7 +685,7 @@
     const daysInMonth = end.getDate();
 
     // fetch reservations once
-    const res = await authFetch(API_RES + '/reservations');
+    const res = await authFetch(API_RES + '/');
     let rows = res.ok ? await res.json() : [];
     if (areaFilter) rows = rows.filter(r=> (r.area||'').toLowerCase().includes(areaFilter.toLowerCase()));
 
@@ -738,7 +738,7 @@
 
   // Visitors
   async function loadVisitors(){
-    const res = await authFetch(API_VISITORS + '/visitors');
+    const res = await authFetch(API_VISITORS + '/');
     if (!res.ok){ showAlert('Erro ao listar visitantes', 'error'); return; }
     const visitors = await res.json();
     const tbody = document.querySelector('#tbl-visitors tbody'); 
@@ -765,7 +765,7 @@
   document.getElementById('refresh-visitors').onclick = loadVisitors;
   
   window.checkInVisitor = async (id) => {
-    const res = await authFetch(API_VISITORS + `/visitors/${id}/check-in`, {method:'POST'});
+    const res = await authFetch(API_VISITORS + `/${id}/check-in`, {method:'POST'});
     if (!res.ok){ 
       const error = await res.json();
       showAlert('Erro no check-in: ' + (error.detail || 'Erro desconhecido'), 'error');
@@ -776,7 +776,7 @@
   };
   
   window.checkOutVisitor = async (id) => {
-    const res = await authFetch(API_VISITORS + `/visitors/${id}/check-out`, {method:'POST'});
+    const res = await authFetch(API_VISITORS + `/${id}/check-out`, {method:'POST'});
     if (!res.ok){ 
       const error = await res.json();
       showAlert('Erro no check-out: ' + (error.detail || 'Erro desconhecido'), 'error');
@@ -789,7 +789,7 @@
   window.deleteVisitor = async (id) => {
     if (!confirm('Tem certeza que deseja excluir este visitante?')) return;
     
-    const res = await authFetch(API_VISITORS + `/visitors/${id}`, {method:'DELETE'});
+    const res = await authFetch(API_VISITORS + `/${id}`, {method:'DELETE'});
     if (!res.ok){ 
       const error = await res.json();
       showAlert('Erro ao excluir: ' + (error.detail || 'Erro desconhecido'), 'error');
@@ -817,7 +817,7 @@
     
     try {
       const body = {name, document, unit_id, visit_date, purpose, contact_phone};
-      const res = await authFetch(API_VISITORS + '/visitors', {
+      const res = await authFetch(API_VISITORS + '/', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
         body: JSON.stringify(body)
@@ -848,7 +848,7 @@
 
   // Maintenance
   async function loadMaintenance(){
-    const res = await authFetch(API_MAINTENANCE + '/maintenance');
+    const res = await authFetch(API_MAINTENANCE + '/');
     if (!res.ok){ showAlert('Erro ao listar ordens de manutenção', 'error'); return; }
     const orders = await res.json();
     const tbody = document.querySelector('#tbl-maintenance tbody'); 
@@ -879,7 +879,7 @@
     const assigned_to = prompt('Nome do responsável:');
     if (!assigned_to) return;
     
-    const res = await authFetch(API_MAINTENANCE + `/maintenance/${id}/assign`, {
+    const res = await authFetch(API_MAINTENANCE + `/${id}/assign`, {
       method:'POST',
       headers:{'content-type':'application/json'},
       body: JSON.stringify({assigned_to})
@@ -896,7 +896,7 @@
   window.completeMaintenance = async (id) => {
     if (!confirm('Tem certeza que deseja marcar como concluída?')) return;
     
-    const res = await authFetch(API_MAINTENANCE + `/maintenance/${id}/complete`, {method:'POST'});
+    const res = await authFetch(API_MAINTENANCE + `/${id}/complete`, {method:'POST'});
     if (!res.ok){ 
       const error = await res.json();
       showAlert('Erro ao concluir: ' + (error.detail || 'Erro desconhecido'), 'error');
@@ -909,7 +909,7 @@
   window.deleteMaintenance = async (id) => {
     if (!confirm('Tem certeza que deseja excluir esta ordem?')) return;
     
-    const res = await authFetch(API_MAINTENANCE + `/maintenance/${id}`, {method:'DELETE'});
+    const res = await authFetch(API_MAINTENANCE + `/${id}`, {method:'DELETE'});
     if (!res.ok){ 
       const error = await res.json();
       showAlert('Erro ao excluir: ' + (error.detail || 'Erro desconhecido'), 'error');
@@ -937,7 +937,7 @@
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const body = {title, description, unit_id, category, priority, requested_by: user.id || 1};
-      const res = await authFetch(API_MAINTENANCE + '/maintenance', {
+      const res = await authFetch(API_MAINTENANCE + '/', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
         body: JSON.stringify(body)
@@ -1018,7 +1018,7 @@
         
         switch(reportType) {
           case 'condominios':
-            const tenantsRes = await authFetch(API_TENANTS + '/');
+        const tenantsRes = await authFetch(API_TENANTS + '/');
             if (tenantsRes.ok) {
               const tenants = await tenantsRes.json();
               reportData = {
@@ -1067,7 +1067,7 @@
           end_date: endDate + 'T23:59:59'
         };
         
-        const res = await authFetch(API_REPORTS + '/reports/generate', {
+        const res = await authFetch(API_REPORTS + '/generate', {
           method:'POST', 
           headers:{'content-type':'application/json'}, 
           body: JSON.stringify(body)
@@ -1098,7 +1098,7 @@
     const qs = new URLSearchParams({ start_date: startDate + 'T00:00:00', end_date: endDate + 'T23:59:59' }).toString();
     const token = localStorage.getItem('token');
     try{
-      const res = await fetch(API_REPORTS + `/reports/reservations/export?${qs}`, {
+      const res = await fetch(API_REPORTS + `/reservations/export?${qs}`, {
         headers: token ? { 'Authorization': 'Bearer ' + token } : {}
       });
       if (!res.ok){ showAlert('Erro ao exportar CSV', 'error'); return; }

@@ -1312,7 +1312,7 @@
         try {
           const [tenantsRes, usersRes] = await Promise.all([
             authFetch(API_TENANTS + '/').catch(() => ({ok: false})),
-            authFetch(API_USERS + '/users').catch(() => ({ok: false}))
+            authFetch(API_USERS + '/').catch(() => ({ok: false}))
           ]);
 
           const tenants = tenantsRes.ok ? await tenantsRes.json() : [];
@@ -1454,7 +1454,7 @@
 
       async function loadUsers() {
         try {
-          const res = await authFetch(API_USERS + '/users');
+          const res = await authFetch(API_USERS + '/');
           if (!res.ok) {
             showAlert('Erro ao carregar usuários', 'error');
             return;
@@ -1552,7 +1552,7 @@
         if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
         
         try {
-          const res = await authFetch(`${API_USERS}/users/${userId}`, {
+          const res = await authFetch(`${API_USERS}/${userId}`, {
             method: 'DELETE'
           });
           
@@ -1653,7 +1653,7 @@
         setLoading(btn, true, 'Criando usuário...');
 
         try {
-          const res = await authFetch(API_USERS + '/users', {
+          const res = await authFetch(API_USERS + '/', {
             method: 'POST',
             body: JSON.stringify(formData)
           });

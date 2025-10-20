@@ -107,3 +107,11 @@ INSERT INTO units (tenant_id, block, number, owner_id) VALUES
 (2, 'B', '201', NULL),
 (2, 'B', '202', NULL)
 ON CONFLICT DO NOTHING;
+
+-- Tabelas para os novos serviços (criadas automaticamente pelos microserviços)
+-- As tabelas serão criadas automaticamente quando os serviços iniciarem
+-- Este script mantém apenas as tabelas básicas necessárias para o funcionamento inicial
+
+-- Comentário: Os novos serviços (budget, events, meetings, minutes, employees, 
+-- documents, assets, notices, audit, service_providers, family_members, notifications)
+-- criam suas próprias tabelas automaticamente usando SQLAlchemy
