@@ -28,24 +28,7 @@
 
   function showNav(show){ document.getElementById('main-nav').style.display = show? 'block':'none' }
 
-  // Carregar lista de tenants
-  async function loadTenants() {
-    try {
-      const res = await fetch(API_TENANTS + '/');
-      if (!res.ok) return;
-      const tenants = await res.json();
-      const select = document.getElementById('tenant-select');
-      select.innerHTML = '<option value="">Selecione um condomínio</option>';
-      tenants.forEach(tenant => {
-        const option = document.createElement('option');
-        option.value = tenant.id;
-        option.textContent = tenant.name;
-        select.appendChild(option);
-      });
-    } catch (error) {
-      console.error('Erro ao carregar tenants:', error);
-    }
-  }
+  // Login sem seleção de condomínio; o backend resolverá pelo email
 
   // Aplicar tema do tenant
   function applyTenantTheme(themeConfig) {
@@ -119,11 +102,10 @@
   }
 
   async function login(){
-    const tenantId = document.getElementById('tenant-select').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
-    if (!tenantId || !email || !password) {
+    if (!email || !password) {
       showAlert('Por favor, preencha todos os campos', 'error');
       return;
     }
@@ -132,10 +114,11 @@
     setLoading(btn, true);
     
     try {
+      const payload = { email, password };
       const res = await fetch(API_AUTH + '/login', {
         method:'POST', 
         headers:{'content-type':'application/json'}, 
-        body: JSON.stringify({tenant_id: parseInt(tenantId), email, password})
+        body: JSON.stringify(payload)
       });
       
       const data = await res.json();
